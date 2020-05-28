@@ -1,4 +1,45 @@
 # Java 8 Features and Examples
+Java 8 introduces declarative style or functional style of programming over the imperative programming. Let's first
+understand what is declarative programming and imperative programming.
+
+### Imperative programming
+In this style of programming we tell each and every thing to compiler like what will be control flow and what operation
+need to perform on the data. Let's take an example:
+```java
+public class ImperativeProgramming {
+    public static void main(String[] args){
+      List<Integer> numbers = Arrays.asList(1,2,3,4,5,6);
+      for (int i = 0; i < numbers.size(); i++) {
+         System.out.println(numbers.get(i));
+      }
+    }
+}
+```
+In above program we have data numbers; over which we want to iterate and perform some operation. So in above program
+we are telling we want from where we want to start, then at what index we want to iterate, and then we are performing
+actual operation.
+
+### Declarative programming
+In declarative programming we leave the control to compiler, and we specify what operation we want to perform. Let's 
+transform above example to declarative programming style.
+```java
+public class DeclarativeProgramming {
+    public static void main(String[] args){
+      List<Integer> numbers = Arrays.asList(1,2,3,4,5,6);
+      numbers.forEach((Integer value) -> System.out.println(value));
+    }
+}
+```
+In above example we left the iteration, or I can say control flow logic on the controller, and I created anonymous 
+function in which I am just giving the what operation is to perform. This anonymous function is kind of implementation
+for Consumer interface comes in java.util.stream package in Java 8.
+
+In 1 liner If I want define the declarative programming and imperative programming. I will say below line:
+```text
+“Imperative programming is like how you do something, and declarative programming is more like what you do.”
+```
+
+
 ## Feature 1 - Lambada expression
 Below code is typical example of how we do the iteration in Java7.
 ```java
