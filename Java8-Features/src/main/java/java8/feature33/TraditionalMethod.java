@@ -1,4 +1,4 @@
-package java8.feature3;
+package java8.feature33;
 
 import java.util.Arrays;
 import java.util.List;

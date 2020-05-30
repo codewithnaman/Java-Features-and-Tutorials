@@ -1,4 +1,4 @@
-package java8.feature2;
+package java8.feature2.rules;
 
 public class TestHuman extends Human implements LivingCreature, Soul {
     @Override
