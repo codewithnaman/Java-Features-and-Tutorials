@@ -48,15 +48,7 @@ and can assign to interface. To create a functional interface the interface shou
 * Interface can have static methods
 * Optionally we can mark the @FunctionalInterface annotation
 
-In Java 8 we can write method implementation in interfaces; for do that we need to use default keyword. Please find
-example in com.example.java8.feature2.rules. Let's understand few things about interface default methods.
-1. Default methods can be overridden in subclasses.
-2. Default method follow hierarchy when calling the method i.e. extending class has higher priority then the extending
-interface method.
-3. If two interfaces have same method, and they don't have any class hierarchy then we need to resolve this problem
-in implementing class. Either we need to write our own implementation or can call one or both of super implementation in
-a sequence. In simple words I can say whenever diamond problem comes from interfaces; it should be solved by implementing
-class.
+We will talk about default method and static method in different section
 
 Below are already existing Functional Interface till Java 7:
 * Runnable
@@ -226,3 +218,223 @@ parameter is used as argument and passed it to printPerson.
 [MethodReferenceAsTarget](src/main/java/java8/feature3/MethodReferenceAsTarget.java) we are calling instance method of 
 Person class printPersonInformation() which does not take any argument but prints instance information from
 whichever instance it is called. So in this the parameter is used as target on which the method is invoked.
+
+## Feature 4 - Default method in Interface
+Till Java 7 we have interfaces which contains the only abstract method; Which says to implementer what to do but not
+how to do. 
+
+With Java 8 we can write method implementation in interfaces; for do that we need to use default keyword. But the
+question comes in mind why we wanna do that; For understanding this just consider an example where you are writing
+a library, and you publish it; after a time it is getting used by multiple projects. This library contains an interface
+which contains the 4 abstract methods which are implemented by the projects who use it. Now you added one more abstract 
+method and chaos will be created because all projects which implemented your interface need to implement this 
+particular method and recompile it and deploy it. Which solutions come with the default method in interface. To
+provide implementation of a method in an interface, we need to use default keyword for method and can provide the 
+implementation.
+
+Please find example in com.example.java8.feature4. Let's understand few things about interface default methods.
+1. Default methods can be overridden in subclasses.
+2. SubTypes automatically carry over the default methods from their supertypes.
+3. For the interface that contribute a default method, the implementation in a subtype takes precedence over the one
+in supertypes.
+4. Implementation in classes, include abstract declaration take precedence over all interface defaults.
+5. If there's a conflict between two or more default method implementations, or there's a default abstract conflict 
+between two interfaces, the inheriting class should disambiguate. i.e. If two interfaces have same method, and they 
+don't have any class hierarchy then we need to resolve this problem in implementing class. Either we need to write our
+own implementation or can call one or both of super implementation in a sequence. In simple words I can say whenever 
+diamond problem comes from interfaces; it should be solved by implementing class. If we have diamond problem we get below
+error:
+```text
+Error:(3, 8) java: types java8.feature4.FastFly and java8.feature4.Sail are incompatible;
+  class java8.feature4.SeaPlane inherits unrelated defaults for cruise() from types java8.feature4.FastFly and java8.feature4.Sail
+``` 
+
+When we want to class interface method we will use <ClassName>.super.<MethodName>, Because if we call 
+<ClassName>.<MethodName> then it may call the static method of class which may present there, so to avoid confusion 
+we use the super reference.
+
+### Interface vs Abstract Classes
+* Abstract class can have state while an interface can't have state.
+* We can inherit one abstract class but can implement any number of interfaces.
+
+## Feature 5 : Final and inner classes and effectively final
+Let's understand code [TraditionalInnerClass](src/main/java/java8/feature5/TraditionalInnerClass.java). In the code
+we are declaring an interface which have one abstract method which take a value and multiply with some value and
+return the result. 
+```java
+ public static void main(String[] args) {
+        Multiplier  multiplier = createMultiplier(4);
+        System.out.println(multiplier.multiplier(3));
+    }
+
+    private static Multiplier createMultiplier(int multiplier) {
+        final int instMultiplier = multiplier;
+        return new Multiplier() {
+            @Override
+            public int multiplier(int value) {
+                return value * instMultiplier;
+            }
+        };
+    }
+```
+
+Now we have created anonymous inner class of interface in method createMultiplier. In the method we are creating the
+Multiplier instance and multiply by argument multiplier which we took in a function variable stored in stack. Now
+if I see we used the variable inside inner class, while the stack will be removed after the call, also if you don't 
+declare the variable as final till Java 7 then code will not compile and give error. So what happens internally after
+declaring variable final, that code will compile. Let's find out th answer.
+
+When we declare the variable as final then compiler adds this variable to anonymous class as instance variable and 
+create a consutructor for this variable and initialize it with the value. If we don't declare the value as final 
+then chances that value is going to be changed on stack and if will not reflect to instance variable which is created
+by the compiler; which can leads to bug. So, Java made it mandatory if you are using a variable inside the anonymous
+function or lambada expression; it should be final or effectively final.
+
+* Effectively final is in Java 8 which says the code will still work if we remove final; but it is understanding 
+between compiler and developer that if variable is used in lambada or inner class then the variable will not
+going to modify. If you try to modify it then compiler will complain to you.
+
+
+## More on java streams, classes and operations
+## Sorting example
+Let's take an example of sorting in Java 7 then we will it to Java 8 and then we understnad the prespective from the
+functional point of view.
+
+[TraditionalMethod](src/main/java/java8/example/sorting/TraditionalMethod.java) is example in which we are sorting
+using Collections.sort(list, comparator). With the above implementation I can see two problems. One is that
+we are mutating objects and second is that for sorting on age we have lot of ceremony and if want to reverse sort 
+we need to change the condition.
+ 
+[ModernMethod1](src/main/java/java8/example/sorting/ModernMethod1.java) use the Java8 Lambada function and steams
+to sort. In which we can see original collection is not modified and reverse is done using calling default method
+of the comparator interface.
+
+Also, we can use the comparator static method comparing which takes Function interface lambada, in which we need to 
+pass on which field we need to sort.
+```text
+ persons.stream().sorted(Comparator.comparing(Person::getAge)).forEach(System.out::println);
+```
+
+Sorting on multiple fields:
+```text
+      persons.
+                stream().
+                sorted(Comparator.
+                        comparing(Person::getAge).
+                        thenComparing(Person::getName))
+                .forEach(System.out::println);
+```
+
+### Min and Max operation
+Let's take our last example, and we want to find the eldest person in our list. Then we can use again comparing method
+of the Comparator interface and pass the function to max method. If there are two persons of same age in our list it
+will return the first person it finds in the list who ie eldest. It returns optional because if the list empty it 
+will return the Optional empty or we can use optional to return default value or throw an exception.
+
+
+## Reduce operation on list
+Let's take an example [ListExample](src/main/java/java8/example/reduce/ListExample.java). Let's consider we have
+a stream of values on which we perform some operation and then want to collect values in Collection, then we will use
+different reduce methods for collecting in different collection types.
+
+If we want to collect the streams in List or any other collection, First thing never ever do like below:
+```text
+        List<Person> personsSortedByAge = new ArrayList<>();
+         persons
+                .stream()
+                .sorted(Comparator.comparing(Person::getAge))
+                .forEach(person -> personsSortedByAge.add(person));
+```
+
+Use Collectors class from stream package and then use method to collect the data after transformation like below:
+```text
+         persons
+                .stream()
+                .sorted(Comparator.comparing(Person::getAge))
+                .collect(Collectors.toList());
+```
+
+Similar List we can collect result in set by Collectors.toSet(). 
+
+Let's now understand how to store the collection in the Map.
+```text
+  Map<Integer,List<Person>> ageGroupOfPerson =
+                persons
+                .stream()
+                .collect(Collectors.groupingBy(Person::getAge));
+```
+For collecting stream as map, we need to group by the objects on some key basis. As we can see collect method take 
+Collectors.groupingBy which further takes a classifier as input which is key for the map and in above case the value is
+List of the object at terminal of stream.
+
+```text
+        Map<Character,List<Person>> firstCharacterGroupOfPerson =
+                persons
+                        .stream()
+                        .collect(Collectors.groupingBy(person -> person.getName().charAt(0)));
+```
+
+In above example we defined the custom key which is person first character. The classifier is a function takes 
+a function which takes an input and return an output.
+
+By classifier we have seen how to decide the key, Let's see how we can specify type of value map can contain.
+```text
+Map<Character, List<Integer>> charAge =
+                persons
+                        .stream()
+                        .collect(groupingBy(person -> person.getName().charAt(0),
+                                mapping(person-> person.getAge(),toList())));
+```
+So in above example we can see our key is person's name first character and value is person's age. For get desired
+type of value we use static function of Collectors class which name is mapping. mapping takes a function and return 
+the value which we want to collect, the second argument takes how we want to collect values like in list, set or any 
+other collection.
+
+
+We have collected value in another collection, what if we want a single key value pair collection. Let's understand
+this as well.
+```text
+        System.out.println("==========Char eldest collection===========");
+        Function<Person, Character> firstCharacterOfPersonName = person -> person.getName().charAt(0);
+        Comparator<Person> byAge = Comparator.comparing(Person::getAge);
+        Map<Character, Optional<Person>> charEldest =
+                persons
+                        .stream()
+                        .collect(groupingBy(firstCharacterOfPersonName, maxBy(byAge)));
+        System.out.println(charEldest);
+```
+
+In above example as we can see we are grouping by the first character of person name, then we wanna eldest in the group
+so what we did we are performing maxBy operation which takes comparator on which the comparison will be performed
+and max value will be return. It might be the collection can empty, so it is returning the Optional of the person.
+
+Now let's understand more complex operation in grouping by like reducing on the condition; like if the name length
+of two persons is equal then eldest person will taken otherwise whose name length is greater than he taken.
+```text
+        System.out.println("==========Name length and then eldest collection===========");
+        Function<Person, Integer> nameLength = person -> person.getName().length();
+        BinaryOperator<Person> criteria = (person1, person2) -> {
+            if (person1.getName().length() == person2.getName().length()) {
+                return person1.getAge() > person2.getAge() ? person1 : person2;
+            } else {
+                return person1.getName().length() > person2.getName().length() ? person1 : person2;
+            }
+        };
+        Map<Integer, Optional<Person>> nameLengthThenEldest =
+                persons
+                        .stream()
+                        .collect(groupingBy(nameLength, reducing(criteria)));
+        System.out.println(nameLengthThenEldest);
+```
+
+We can transform the resulting field as below:
+```text
+        System.out.println("==========Char with eldest person age collection===========");
+        Map<Character, Optional<Integer>> charEldestAge =
+                persons
+                        .stream()
+                        .collect(groupingBy(firstCharacterOfPersonName,
+                                mapping(Person::getAge, maxBy(Integer::compare))));
+        System.out.println(charEldestAge);
+```
+
