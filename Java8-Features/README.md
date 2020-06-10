@@ -438,3 +438,17 @@ We can transform the resulting field as below:
         System.out.println(charEldestAge);
 ```
 
+## Streams Laziness
+Streams are lazy be default; i.e. whenever we perform the operation and if we just perform the intermediate operation
+without any terminal operation they are not going to call. While when we call the terminal operation, it will compute
+the operation depending on your terminal operation. Let's say if you write findFirst() as terminal operation, 
+then the stream will process till it find the first item, as it find the first item which satisfies all condition 
+it will process through steps which need to qualify. In example 
+[TestStreamLaziness](src/main/java/java8/example/stream/lazy/TestStreamLaziness.java) we can see that we
+initialized the stream but no intermediate operation is called until we called the findFirst(). Also, we can
+see that as the findfirst() get its result on 4 rest of the elements are not processed which is also 
+show efficiency of stream.
+
+Now how we identify the terminal operation of stream of and intermediate operation of stream. The thumb rule for this
+I can say is that if a function is returning Stream, or it's subtype then it is intermediate operation. If it is
+returning something else then it is terminal operation. 
