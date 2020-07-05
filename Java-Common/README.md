@@ -18,7 +18,7 @@ a class variable of extending class then it got failed like in our
 [TestConstructor4](src/main/java/com/example1/TestConstructor4.java). So in this example extending class variable is not
 initialized but we are calling method using base class constructor due to which it fails with NPE.
 
-* Recommended practice is that don't call a polymorphic function from constructor.
-* Also, if you still want to do some process on this we can use static factory method. Also we can use the supplier to
+* Recommended practice is that don't call polymorphic function from a constructor.
+* Also, if you still want to do some process on this we can use static factory method. Also, we can use the supplier to
 de-duplicate the code for factory.
 

@@ -452,3 +452,55 @@ show efficiency of stream.
 Now how we identify the terminal operation of stream of and intermediate operation of stream. The thumb rule for this
 I can say is that if a function is returning Stream, or it's subtype then it is intermediate operation. If it is
 returning something else then it is terminal operation. 
+
+## Java 8 lambada or stream functions
+* negate : This is default method in Predicate class. This is used where we want to perform reverse operation of a 
+particular predicate. The most preferred way to do this provides ! against the predicate in lambada function. Then 
+We can prefer this negate method.
+
+* compute : This is default method of Map class. We use this method to perform some operation on a map for a particular
+key. For Example:
+```text
+map.compute("apple", (key, value) -> value + 1);
+```
+The above example is one of the common use case. But if your provided key is not present then this method throws NPE.
+Let's resolve this problem by using one other method of the Map Class. 
+
+* merge : If we use compute method and want to avoid NPE, then we can do something like below with compute function.
+```text
+map.compute("apple", (key, value) -> Objects.nonNull(value) ? value + 1 : 1);
+```
+But, the above code is not much intuitive. We will use the merge function to it better. Let's understand first
+how compute works and how merge is going to work for us.
+
+If we see compute method signature it takes a key and BiFunction which has two arguments key and value. But the
+merge takes 3 argument; first is key second is default value if key is not present third is the BiFunction which 
+tells how you want to use default value and existing value of the key. Let's see this by example:
+
+```text
+map.merge("apple",1,(value,defaultValue) -> value+defaultValue);
+```
+
+So, if the key is not present in merge then it will add the key with default value; if the key is present then it will
+increment the value by defaultValue as provided in lambada expression for the BiFunction. Be cautious about this method
+because when BiFunction returns null then merge removes the key.
+
+* computeIfPresent : This is again a default method of the Map class. This is used when we want to perform some operation
+on the map if and only if the key is present. It also avoids NPE if the key is not present.
+
+* computeIfAbsent : This is again a default method of the Map Class. This is just opposite of the computeIfPresent. If
+the key is not present then it performs the operation. Let's see example for both:
+```text
+map.computeIfAbsent("apple", key-> 0);
+map.computeIfPresent("apple",(key,value) - > value+1);
+```
+
+* When we are using lambada function we should try to use the [pure function](http://blog.agiledeveloper.com/2015/12/two-rules-for-purity.html).
+
+
+
+
+
+
+
+
