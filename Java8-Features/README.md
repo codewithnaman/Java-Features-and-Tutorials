@@ -60,6 +60,8 @@ There are new Functional Interface with Java 8:
 * Supplier\<U>
 * Function\<U,R>
 * Predicate\<T>
+* BiFunction\<T, U, R>
+* BiConsumer<T, U>
 
 ## Feature 1 - Lambada expression
 Below code is typical example of how we do the iteration in Java7.
@@ -257,7 +259,7 @@ we use the super reference.
 * Abstract class can have state while an interface can't have state.
 * We can inherit one abstract class but can implement any number of interfaces.
 
-## Feature 5 : Final and inner classes and effectively final
+## Feature 5 : Final,  inner classes and effectively final
 Let's understand code [TraditionalInnerClass](src/main/java/java8/feature5/TraditionalInnerClass.java). In the code
 we are declaring an interface which have one abstract method which take a value and multiply with some value and
 return the result. 
@@ -497,10 +499,91 @@ map.computeIfPresent("apple",(key,value) - > value+1);
 
 * When we are using lambada function we should try to use the [pure function](http://blog.agiledeveloper.com/2015/12/two-rules-for-purity.html).
 
+* summaryStatistics : This is to get the summary statistics on the double stream.
+```java
+System.out.println(
+    Stream.of(1,2,3,4,5,6).mapToDouble(e->e).summaryStatistics()
+);
+```
+or
+```java
+System.out.println(
+    Stream.of(1,2,3,4,5,6).collect(Collectors.summarizingDouble(e->e))
+);
+```
 
+Both return the DoubleSummaryStatistics which contains the number of element stream have, sum,avarage and min and max
+value for the stream.
 
+* concat : This is used to concat two different streams to one.
+```java
+Stream.concat(stream1,stream2)
+```
 
+* zip : zip will put the elements alternatively from different streams. For example :
 
+Stream 1 : 1  2 3 4 5
 
+Stream 2 : a b c d e
 
+Then zip will return like (1,a),(2,b).(3,c),(4,d),(5,e). This is important part for functional programming but zip 
+operation is not directly available in the java while it is in Scala. So we can perform same operation in Java 
+like below:
+```text
+List<Integer> list1 = Arrays.asList(1,2,3,4,5);
+List<String> list2 = Arrays.asList("a","b","c","d","e");
+IntStream.range(0,Math.min(list1.size(),list.size())
+         .mapToObj(i-> new String[] {list1.get(i).toString(),list2.get(i)})
+         .forEach(element -> System.out.println(element[0]+","+element[1]));
+``` 
+
+* Composing Predicates: Composing predicates means combining the predicates with AND,OR or NOT operations. Just consider
+you have two predicates and you want to perform the filtering based on the both of the condition; and you are passing
+the predicate to a different function. So to pass two predicates as one predicate to function you need to combine
+in some logical group. For which Predicate interface provide default methods to combine which is and,or and negate
+method.
+```text
+Predicate<Integer> isEven = e-> e%2==0;
+Predicate<Integer> isGT100 = e-> e>100;
+passToFunction(isEven.and(isGT100));
+```
+So in above example we can see we compose two aggreate in one and passing it to the function.
+
+* Composing Functions: Similar like predicates the Function interface provides the default method to compose the function
+which is andThen and compose method.
+```text
+Function<Integer,Integer> inc = e -> e+1;
+Function<Integer,Integer> double = e -> e*2;
+passToFunction(inc.andThen(double));
+passToFunction(inc.compose(double));
+```
+Now what is difference between the both functions; The andThen passed function will be applied after the inc is done 
+its work while compose passed function will be applied before the inc is called. So for example we have number 5 and
+we call above code then and then will print 12 i.e. first it incremented 5 with 1 which becomes 6 and then perform
+double, so it became 12. While same in compose the output will be 11; because it will first double the number for which
+it became 10 and then increment by 1, so it will become 11. 
+
+To combine the functions we need to take care of output of one function should be input the other function.
+
+## Java 8 Lambda Expression Best Practices
+* Prefer method references over lambada expression
+* Use lambda function as glue code; Keep them short and crispy. 
+* Avoid lambda function bigger than 2 lines.
+* Use built-in interfaces for 0,1 or 2 parameters; as compare to create your owns:
+    * Consumer\<U> : Take 1 parameter and returns nothing; has accept method which performs the operation. 
+        foreach method takes consumer.
+    * Supplier\<U>  : Take 0 parameter and return 1 parameter; has get method which returns the value. 
+        orElse method takes Supplier.
+    * Function\<U,R> : Takes 1 parameter and return 1 parameter; has apply method which apply the opertaion and 
+        return the result. map method takes Function.
+    * Predicate\<T> : Takes 1 parameter and return boolean result; has test method to perform the operation.
+        filter method takes Predicate.
+    * BiFunction\<T, U, R> : Takes 2 parameters and return 1 parameter; has apply method which performs the operation
+        and return the result. reduce method takes BiFunction.
+    * BiConsumer<T, U> : Takes 2 parameters and returns nothing; has accept method which perform the operation.
+* If you want more than 3 parameters or more as input to lambda you can pass the Object to built-in interfaces lambda;
+or you can create your own interfaces.
+* Try to give proper names to lambda variable which will help in readable code.
+* Avoid shared mutability in Lambda functions.
+* 
 
