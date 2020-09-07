@@ -12,4 +12,5 @@ public interface FastFly extends Fly {
     default void cruise() {
         System.out.println("FastFly::cruise");
     }
+
 }
