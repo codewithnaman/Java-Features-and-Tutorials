@@ -751,3 +751,304 @@ example first will have value Optional of 82 which converts to stream and proces
 Optional of Empty and Stream with no value has passed to function.
 
 ## Collectors New Methods
+In Java 8 Collectors is introduce which contains number of method to collect the result in collections. We Use collect
+method at the end of stream and use Collectors static method to provide in function of collect which collects the data.
+We will use the below code to get list and perform groupping example for demonstrate methods introduced in Java 9.
+```text
+    public static List<Person> createPersonsList() {
+           List<Person> persons = Arrays.asList(
+                   new Person("Aakash", 75),
+                   new Person("Tina", 24),
+                   new Person("Sara", 2),
+                   new Person("Aarohi", 10),
+                   new Person("Chhaya", 85),
+                   new Person("Aakash", 25),
+                   new Person("Ananya", 24),
+                   new Person("Sara", 20),
+                   new Person("Tina", 35),
+                   new Person("Bahubali", 12));
+           return persons;
+      }
+```
+### filtering method
+Let's see a traditional example in below code and, then we will see Java 9 filtering method.
+```text
+ private static void java8GroupingByName(){
+        Map<String,List<Person>> personsGroupedByName =
+                createPersonsList().stream().collect(Collectors.groupingBy(Person::getName));
+        System.out.println(personsGroupedByName);
+    }
+```
+In above example we just performed the grouping of list to map by the name; so the person whose name are similar will be 
+put in a list and assign to key with their name. Let's say we want to map only ages with the name; then we will use below
+code for this:
+```text
+private static void java8GroupingByNameAndMappingOnlyAge() {
+        Map<String,List<Integer>> personsGroupedByNameAndMappedByAge =
+                createPersonsList().stream().
+                        collect(Collectors.groupingBy(Person::getName, Collectors.mapping(Person::getAge,Collectors.toList())));
+        System.out.println(personsGroupedByNameAndMappedByAge);
+   }
+```
+The Output of above is below:
+```text
+{Ananya=[24], Bahubali=[12], Chhaya=[85], Aarohi=[10], Sara=[2, 20], Tina=[24, 35], Aakash=[75, 25]}
+```
+So in last function we grouped all the persons whose name are same and took their ages. Just consider in the map we want
+to collect those persons whose age is greater than 20 only. In that case with Java 8 we need to perform the filtering
+at very beginning of stream; But what if we want filtering within groupingby. In Java 9 we get filtering method in 
+collectors in which we can pass the predicate; when predicate has passed only those values will be collected in map.
+```text
+  private static void java9FilterPersonWithAge() {
+        Map<String,List<Person>> personsGroupedByNameAndMappedByAge =
+                createPersonsList().stream().
+                        collect(Collectors.groupingBy(Person::getName, 
+                                Collectors.filtering(person -> person.getAge()>20,Collectors.toList())));
+        System.out.println(personsGroupedByNameAndMappedByAge);
+    }
+```
+In above function we are using filtering function and passed the predicate whose age is greater than 20; only take
+those values for groupping. The output of above function is below:
+```text
+{Ananya=[Person{name='Ananya', age=24}], Bahubali=[], Chhaya=[Person{name='Chhaya', age=85}], Aarohi=[], Sara=[], Tina=[Person{name='Tina', age=24}, Person{name='Tina', age=35}], Aakash=[Person{name='Aakash', age=75}, Person{name='Aakash', age=25}]}
+```
+But we want to collect the age of person only. Let's see how we can do it while fitering:
+```text
+private static void java9FilterPersonWithAgeAndGetAgeOnly() {
+        Map<String,List<Integer>> personsGroupedByNameAndMappedByAge =
+                createPersonsList().stream().
+                        collect(Collectors.groupingBy(Person::getName,
+                                Collectors.filtering(person -> person.getAge()>20,
+                                        Collectors.mapping(Person::getAge,Collectors.toList()))));
+        System.out.println(personsGroupedByNameAndMappedByAge);
+    }
+```
+The output of above function is below:
+```text
+{Ananya=[24], Bahubali=[], Chhaya=[85], Aarohi=[], Sara=[], Tina=[24, 35], Aakash=[75, 25]}
+```
+It contains only the persons whose age is greater than 20; whose age is less than or equal to 20 are dropped
+of while collection the values.
+
+### flatMapping method
+For this example we will use below list and perform operation on this:
+```text
+public static List<Person> createPersonsList() {
+        List<Person> persons = Arrays.asList(
+                new Person("Aakash", 75, "Aakash@gmail.com","Aakash@gmail.com"),
+                new Person("Tina", 24,"Tina@hotmail.com"),
+                new Person("Sara", 2,"Sara@gmail.com","Sara@xyz.com"));
+        return persons;
+    }
+```
+Let's Consider we want all Person's mail in a Map Corresponding to their name. Let's write the function for this.
+```text
+  private static void traditionalGroupingForName() {
+        System.out.println(
+                createPersonsList().stream()
+                .collect(Collectors.groupingBy(Person::getName,Collectors.mapping(Person::getEmails,Collectors.toList())))
+        );
+    }
+```
+The output of above function is something like below:
+```text
+{Sara=[[Ljava.lang.String;@1e643faf], Tina=[[Ljava.lang.String;@6e8dacdf], Aakash=[[Ljava.lang.String;@7a79be86, [Ljava.lang.String;@34ce8af7]}
+```
+But what happen when we were collecting and mapping in the function. Since the mapping function is mapping array
+of String to List; So the Output is Map<String,List<String[]>>. But we want to get the groupping like Map<String,List<String>>
+to do that Java 9 introduces flatMapping in Collectors and to get the output as expected we need to write above function
+like below:
+```text
+  private static void flatMappingNameAndEmails() {
+        System.out.println(
+                createPersonsList().stream()
+                        .collect(Collectors.groupingBy(
+                                Person::getName,
+                                Collectors.flatMapping(person-> Stream.of(person.getEmails()),Collectors.toList())))
+        );
+    }
+```
+Now the result of above function is like below:
+```text
+{Sara=[Sara@gmail.com, Sara@xyz.com], Tina=[Tina@hotmail.com], Aakash=[Aakash@gmail.com, Aakash@gmail.com, Aakash24@gmail.com, Aakash29@gmail.com]}
+```
+
+## Factory method of Collections
+In Java 9; they have introduced factory method to create Immutable collection. Let's see this with List,Set and Map.
+
+### List
+Let's first see till Java 8 How we can create a list:
+
+**Method 1 :**
+```text
+    private static void java8ListCreation() {
+        List<String> list = new ArrayList<>();
+        list.add("Test");
+        list.add("Test2");
+        System.out.println(list.getClass());
+        System.out.println(list);
+        list.set(0,"Changed");
+        System.out.println(list);
+        list.add("Test3");
+        System.out.println(list);
+        list.remove(0);
+        System.out.println(list);
+    }
+```
+ The output of above is like below:
+ ```text
+class java.util.ArrayList
+[Test, Test2]
+[Changed, Test2]
+[Changed, Test2, Test3]
+[Test2, Test3]
+```
+We can see the list created is mutable and, we can add, remove or edit the values in list positions. 
+
+**Method 2 :**
+```text
+    private static void java8ListFromArray() {
+        List<String> list = Arrays.asList("Test","Test2");
+        System.out.println(list.getClass());
+        System.out.println(list);
+        list.set(0,"Changed");
+        System.out.println(list);
+        //list.add("Test3");   // This operation is not supported got UnsupportedOperationException
+        //System.out.println(list);
+        //list.remove(0);  // This operation is not supported got UnsupportedOperationException
+        //System.out.println(list);
+    }
+```
+In above method we create list from array, which is immutable i.e. we are not able to add or remove element. But it is
+not truely immutable as set is changing element.
+
+Now Let's see Java 9 factory method to create List.
+```text
+  private static void java9ListCreationWithMoreThan5Values() {
+        List<String> list = List.of("Test","Test1","Test2","Test3","Test4","Test5");
+        System.out.println(list.getClass());
+        System.out.println(list);
+        //list.set(0,"Changed");  // This operation is not supported got UnsupportedOperationException
+        //System.out.println(list);
+        //list.add("Test3");      // This operation is not supported got UnsupportedOperationException
+        //System.out.println(list); 
+        //list.remove(0);        // This operation is not supported got UnsupportedOperationException
+        //System.out.println(list);
+    }
+```
+Output of Above code is:
+```text
+class java.util.ImmutableCollections$ListN
+[Test, Test1, Test2, Test3, Test4, Test5]
+```
+The list created using of method is truely immutable and we can see the class is "class java.util.ImmutableCollections$ListN",
+which belongs to ImmutableCollection. There are some special cases if create the List with 0,1,2,3 values. Let's create
+an example and see the difference:
+```text
+private static void java9ListWithLessThan4Values() {
+        List<String> zeroList = List.of();
+        System.out.println(zeroList.getClass());
+        List<String> oneList = List.of("Test");
+        System.out.println(oneList.getClass());
+        List<String> twoList = List.of("Test","Test2");
+        System.out.println(twoList.getClass());
+        List<String> nList = List.of("Test","Test2","Test3");
+        System.out.println(nList.getClass());
+    }
+```
+The output of above is like below:
+```text
+class java.util.ImmutableCollections$ListN
+class java.util.ImmutableCollections$List12
+class java.util.ImmutableCollections$List12
+class java.util.ImmutableCollections$ListN
+```
+The output above is because I am using the Java 11 and set the compilation level to 9; But if really compile and 
+run above code with Java 9 the output is like below:
+```text
+class java.util.ImmutableCollections$List0
+class java.util.ImmutableCollections$List1
+class java.util.ImmutableCollections$List2
+class java.util.ImmutableCollections$ListN
+```
+They have created separate class for List with 0 value, 1 value and 2 values for internal optimization and as we can see
+output above to this they changed in Java 11. Same we can see with Set and Map factory methods of Java9.
+
+Let's see one more example:
+```text
+private static void java9ListWithNullValue() {
+        List<String> nList = List.of("Test","Test2",null,"Test3");
+        System.out.println(nList);
+    }
+```
+The above code will blow up with NPE while running the code. So Factory methods does not allow null while 
+creating collection. If you still want to create a list which contain the null value Arrays.asList allow null.
+
+### Set
+Set is more and less like List apart from it doesn't allow duplicate values and blow up in compile time. Let's see a
+quick example of this:
+```text
+  public static void main(String[] args) {
+        Set<String> zeroSet = Set.of();
+        System.out.println(zeroSet.getClass());
+        Set<String> oneSet = Set.of("Test");
+        System.out.println(oneSet.getClass());
+        Set<String> twoSet = Set.of("Test","Test2");
+        System.out.println(twoSet.getClass());
+        Set<String> nSet = Set.of("Test","Test2","Test3");
+        System.out.println(nSet.getClass());
+
+        Set<String> duplicateValueSet = Set.of("Test","Test","Test3");
+    }
+```
+The output of above code is:
+```text
+class java.util.ImmutableCollections$SetN
+class java.util.ImmutableCollections$Set12
+class java.util.ImmutableCollections$Set12
+class java.util.ImmutableCollections$SetN
+Exception in thread "main" java.lang.IllegalArgumentException: duplicate element: Test
+	at java.base/java.util.ImmutableCollections$SetN.<init>(ImmutableCollections.java:604)
+	at java.base/java.util.Set.of(Set.java:502)
+	at java9.feature8.SetExample.main(SetExample.java:18)
+```
+As we can see in example the Code will blow up at runtime with IllegalArgumentException, if factory method contains the 
+duplicate value while creating the set. It has same concept as List for 0,1,2 values and more than 2 values for internal
+optimization.
+
+### map
+Let's create map using of method. of method takes arguments which are even in numbers and every odd position value has 
+considered as key and even position value has considered as value. Let's see this by example:
+```text
+  private static void mapExample() {
+        Map<String,Integer> oneValueMap = Map.of("a",1);
+        System.out.println(oneValueMap.getClass());
+        System.out.println(oneValueMap);
+        Map<String,Integer> map = Map.of("a",1,"b",2);
+        System.out.println(map.getClass());
+        System.out.println(map);
+    }
+```
+The output of above code is:
+```text
+class java.util.ImmutableCollections$Map1
+{a=1}
+class java.util.ImmutableCollections$MapN
+{a=1, b=2}
+```
+As we can see in above example for map we have different class for only 1 value of Map and if map contains the more than
+1 value the class will be MapN. We can see odd position value is key and even position value is map value. Now Let's say
+if we try to pass odd number of arguments in of method of Map; then code will not compile and give error.
+
+Now let's say we have created a map like below:
+```text
+ private static void mapDifferentTypeOfKeyAndValue() {
+        System.out.println(Map.of(1,"a","b",2));
+        System.out.println(Map.<String,Integer>of("a",1,"b",2));
+    }
+```
+In above function first one is valid it can contain the Object class key and Object class value. So when we retrieve 
+the value we need to check and cast in proper type. In second one we have asked compiler to strict checking of map at
+compile time that key should be a string and value should be an Integer.
+
+## CompletableFuture new methods
