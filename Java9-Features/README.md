@@ -1,6 +1,6 @@
 # Java 9 Features
-With Java 9 release there are number of features added. Let's have a look on the features; With Java 9 Modules feature
-is also added; which we look in detail after all other major features covered.
+With Java 9 release there are number of features added. Let's have a look on the features which are introduced in Java 9,
+except modules. Modules we will cover in different project of same repository.
 
 ## Interfaces and private method in interfaces
 With Java 8 we can provide the implementation details in the interface with public default method or static method; But
@@ -1052,3 +1052,190 @@ the value we need to check and cast in proper type. In second one we have asked 
 compile time that key should be a string and value should be an Integer.
 
 ## CompletableFuture new methods
+If you are new to CompletableFuture; You can visit [link](https://github.com/naman-gupta810/Java-Concurrency/tree/master/chapter-4-completable-future)
+and get an overview of CompletableFuture.
+
+### timeout Method
+Till Java 8; CompletableFuture does not have any timeout method and, it waits for the CompletableFuture to complete or
+complete exceptionally. Let's take an example of Java 8 CompletableFuture first:
+```text
+    private static void java8CompletableFuture() {
+        CompletableFuture<Double> converterFuture =
+                CompletableFuture.supplyAsync(()-> converter.convertCurrency("USD","INR"));
+        converterFuture.thenAccept(System.out::println);
+        
+        CompletableFuture<Double> converterFutureJpy =
+                CompletableFuture.supplyAsync(()-> converter.convertCurrency("JPY","INR"));
+        converterFutureJpy.exceptionally(TimeOutExample::reportError).thenAccept(System.out::println);
+    }
+
+     public static double reportError(Throwable throwable){
+            System.out.println(throwable);
+            throw new RuntimeException(throwable.getMessage());
+      }
+
+  public static void main(String[] args) throws InterruptedException {
+        java8CompletableFuture();
+        sleep(5000);
+    }
+```
+
+The above code will generate below output:
+```text
+java.util.concurrent.CompletionException: java.lang.RuntimeException: JPY currency can't be converted
+73.45103179972938
+```
+
+And If main ends before the CompletableFuture completes then there will be no output. If we comment the sleep line in 
+main method, then there will be no output and, we don't even get any exception that CompletableFuture not completed
+within time. 
+
+In Java 9, In CompletableFuture they have added timeout method, so If any CompletableFuture didn't complete within the
+time provided, It will complete with a default value if we use completeOnTimeout, and with TimeoutException if we use
+orTimeout method of Java 9. Let's see an Example for both:
+```text
+    private static void java9CompletableFuture() {
+        CompletableFuture<Double> completeTimeout =
+                CompletableFuture.supplyAsync(()-> converter.convertCurrency("USD","INR"));
+        completeTimeout.thenAccept(System.out::println);
+        completeTimeout.completeOnTimeout(50.0,2, TimeUnit.SECONDS);
+
+        CompletableFuture<Double>  orTimeout=
+                CompletableFuture.supplyAsync(()-> converter.convertCurrency("USD","INR"));
+        orTimeout.exceptionally(TimeOutExample::reportError).thenAccept(System.out::println);
+        orTimeout.orTimeout(2, TimeUnit.SECONDS);
+
+        CompletableFuture<Double> converterFutureJpy =
+                CompletableFuture.supplyAsync(()-> converter.convertCurrency("JPY","INR"));
+        converterFutureJpy.exceptionally(TimeOutExample::reportError).thenAccept(System.out::println);
+    }
+```
+Above output will for above code will be below:
+```text
+50.0
+java.util.concurrent.TimeoutException
+java.util.concurrent.CompletionException: java.lang.RuntimeException: JPY currency can't be converted
+```
+Since the first one has not completed within the time and, we have given the default value 50.0; and that we get in the
+output. In Second one we have given if task not completes it will complete with an TimeoutException; And Third one will 
+the same as it is because we didn't have registered the timeout with this.
+
+## StackWalker
+This is new Feature added in Java 9; This is a useful feature if you are developing any tool, plugin or any agent which
+attach to JVM and fetches data. This feature gives us information about the stack at particular time. Let's see this 
+by Example:
+```text
+public class SimpleStackWalker {
+
+    public static void main(String[] args) {
+        TestClass1 testClass1 = new TestClass1();
+        testClass1.testMethod1();
+    }
+}
+
+class TestClass1 {
+    public void testMethod1() {
+        TestClass2 testClass2 = new TestClass2();
+        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        System.out.println(walker.getCallerClass());
+        testClass2.testMethod2();
+    }
+}
+
+class TestClass2 {
+    public void testMethod2(){
+        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        System.out.println(walker.getCallerClass());
+        System.out.println("Done");
+    }
+}
+```
+The above class is very simple example of StakeWalker. In which we are calling the testMethod1 of TestClass1, which 
+further calls the testMethod2 of TestClass2. In Both classes we have get instance of StackWalker and provide an option
+that will keep the class information within StackWalker. Let's see output of the above code:
+```text
+class java9.feature11.SimpleStackWalker
+class java9.feature11.TestClass1
+Done
+```
+
+In above example we are just fetching the caller class info; We can also get all the frames in the call stack and further
+information by calling frames method on StakeWalker. Let's see this by below example:
+```text
+public class FactorialStakeWalkerExample {
+    public static void main(String[] args) {
+        FindFactorial factorial = new FindFactorial();
+        factorial.factorial(5);
+    }
+}
+
+class FindFactorial {
+
+    public int factorial(int number){
+        if(number==1){
+            StackWalker walker = StackWalker.getInstance();
+            walker.forEach(stackFrame -> System.out.println(stackFrame.getClassName()+" "+stackFrame.getMethodName()+" "+stackFrame.getLineNumber()));
+            return number;
+        }
+        return number * factorial(number-1);
+    }
+
+}
+```
+In above class we are calling a recursive function when it reaches to terminal operation i.e. number==1; then we are
+are traversing each frame and printing the class name, method name and line number of each frame. Let's see the output
+of above code:
+```text
+java9.feature11.FindFactorial factorial 15
+java9.feature11.FindFactorial factorial 18
+java9.feature11.FindFactorial factorial 18
+java9.feature11.FindFactorial factorial 18
+java9.feature11.FindFactorial factorial 18
+java9.feature11.FactorialStakeWalkerExample main 6
+```
+So very first line is the factorial method which is printing the frames and rest of lines are from recursive call on 
+line 18 and then main method calls the FindFactorial class factorial method from line number 6 which is printed at last.
+
+Just consider in factorial method is 500. Then the log will be huge; If we want to perform operations like filter, map or
+any other stream functions. StakeWalker provides walk method which takes a function which takes a stream of StackFrame 
+and returns a result. Let's see this by example:
+```text
+
+public class FactorialStakeWalkerStreamExample {
+    public static void main(String[] args) {
+        FindFactorialStream factorial = new FindFactorialStream();
+        factorial.factorial(500);
+    }
+}
+
+class FindFactorialStream {
+
+    public int factorial(int number){
+        if(number==1){
+            StackWalker walker = StackWalker.getInstance();
+            walker.walk(stackFrameStream ->
+                    stackFrameStream.filter(frame-> frame.getLineNumber()!=25)
+                    .map(frame-> frame.getClassName()+" "+frame.getMethodName()+" "+frame.getLineNumber()).
+                    collect(Collectors.toList()))
+            .forEach(System.out::println);
+
+            return number;
+        }
+        return number * factorial(number-1);
+    }
+
+}
+```
+
+In above example in walk function we are filtering all those frame whose line number is 25 and transforming the output. 
+After stream processing we are collecting the results in List and printing that using foreach method. Let's see output
+of above code:
+```text
+java9.feature11.FindFactorialStream factorial 17
+java9.feature11.FactorialStakeWalkerStreamExample main 8
+```
+
+So we contain only output apart from recursive calls.
+
+We have covered almost all major improvements except modules of Java 9. Java 9 modules feature will be covered in 
+different project of same repository.
