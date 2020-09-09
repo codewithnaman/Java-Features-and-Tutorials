@@ -1,3 +1,27 @@
+# Table of Contents
+* [Private interface methods](#interfaces-and-private-method-in-interfaces)
+* [_ is Keyword in Java 9](#_-in-java-9)
+* [Try with resources using reference](#try-with-resources) 
+* [Finalize method deprecated in Java 9](#finalize-deprecation)
+* [Cleaner for finalize replacement](#finalize-try-with-resources-and-cleaner)
+* [Stream API Improvements](#stream-new-methods)
+    * [dropWhile and takeWhile](#dropwhile-and-takewhile)
+    * [Loop/Iteration Improvement](#iteration-in-stream)
+* [Optional API Improvements](#optional-new-methods)
+    * [ifPresentOrElse](#ifpresentorelse-method)
+    * [or Optional](#or-method)
+    * [Optional to Stream](#stream-method)
+* [Collectors API Improvement](#collectors-new-methods)
+    * [filtering in grouping](#filtering-method)
+    * [flatmapping while collecting](#flatmapping-method)
+* [Factory Method of Collections](#factory-method-of-collections)
+    * [List](#list)
+    * [Set](#set)
+    * [Map](#map)
+* [Completable Future API improvements](#completablefuture-new-methods)
+    * [timeout in CompletableFuture](#timeout-method)
+* [StakeWalker](#stackwalker)
+
 # Java 9 Features
 With Java 9 release there are number of features added. Let's have a look on the features which are introduced in Java 9,
 except modules. Modules we will cover in different project of same repository.

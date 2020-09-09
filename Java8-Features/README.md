@@ -259,7 +259,7 @@ we use the super reference.
 * Abstract class can have state while an interface can't have state.
 * We can inherit one abstract class but can implement any number of interfaces.
 
-## Feature 5 : Final,  inner classes and effectively final
+## Feature 5 : Final, inner classes and effectively final
 Let's understand code [TraditionalInnerClass](src/main/java/java8/feature5/TraditionalInnerClass.java). In the code
 we are declaring an interface which have one abstract method which take a value and multiply with some value and
 return the result. 
