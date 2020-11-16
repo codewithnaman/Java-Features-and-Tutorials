@@ -32,9 +32,137 @@ So we have installed both the JDK; I set the Java 14 as my default JDK.
 
 ## Why Modules?
 Let's understand what problem JDK team is solving using Modules. Modules are part of 
-[Jigsaw Project](https://openjdk.java.net/projects/jigsaw/) of JDK. 
+[Jigsaw Project](https://openjdk.java.net/projects/jigsaw/) of JDK.
+
+### Size of rt.jar
+If we give a look on the size of library specially rt.jar to previous versions of the java; it's huge and contains a lot 
+of functionality; which you might be using or might be not in your application but provided to you with this jar. Let's
+see look the size of rt.jar in Java 8.
 ```text
 ngupta@NAMAN-DELL:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib$ ls -lrth rt.jar
 -rw-r--r-- 1 root root 63M Aug  3 06:46 rt.jar
 ```
+So it is huge and contains many functionality like CORBA, Swing, AWT etc. even you use these features in your application
+or not that will bundle in library and provided in this jar. If you use these features in your application in the future,
+it is readily available, and you can write code for those features without including any library.
 
+With Java 9 or 9+ these functionalities aren't provided by default to you; When you use those you include its modules 
+and then it will available to you.
+
+### Lack of clarify on dependencies
+We generally use the Maven or Gradle for dependency management in our project; which manage our compile time dependency.
+Java 9 provides the dependency graph which will be same as compile time and carried at runtime which provides more 
+security and reliability for the code.
+
+### Security
+Till Java 8 if in our application anybody drops a library with the same package name then java sees both package loaded
+and keeps running application. So anybody can drop their jar with the same package and use your classes for their code.
+
+While in Java 9; that does not allow modules with same name; and takes only module with the one name. So if anybody drops
+the jar with same module Java 9 load one module and kicks out the other.
+    
+### Public is too open
+public classes is too open; If anything is public does not mean you should use it. Moving forward with Java 9 public is
+no more public; for making a class public needs to be exported for become public. We will see it further how this can be
+done further in this tutorial.
+
+### Late runtime failures
+Fail-fast is a good model; as we get quick feedback and can handle failures effectively. In Java 8; we copy the library
+and include the dependencies in classpath; But just consider that we forgot or dropped one library for the application
+to include in the classpath and started the application. Application will start fine and complain about the library that
+ClassNotFound when we hit the flow. It will not tell immediately that jar or classes missing which may require at runtime.
+
+With Java 9 it complains at start of the application if anything is missing for application before the application start.
+It is possible because of dependency graph we built at compile time and same used at runtime to verify this.
+
+Let's see how many modules are present for our Java version and how to list it:
+```text
+ngupta@NAMAN-DELL:/$ java --list-modules
+java.base@14.0.2
+java.compiler@14.0.2
+java.datatransfer@14.0.2
+java.desktop@14.0.2
+java.instrument@14.0.2
+java.logging@14.0.2
+java.management@14.0.2
+java.management.rmi@14.0.2
+java.naming@14.0.2
+java.net.http@14.0.2
+java.prefs@14.0.2
+...
+```
+We can see the java.base which is needed for all other modules and other modules which we can list by `java --list-modules`
+command. Let's see how many modules we have with Java 14:
+```text
+ngupta@NAMAN-DELL:/$ java --list-modules|wc -l
+72
+```
+
+## Creating modules
+### Creating Classes without modules
+We will create a class and compile it with Java Version 9 or 9+ and then we will see the output of that.
+```text
+ngupta@NAMAN-DELL:~$ mkdir -p compute/com/example/compute
+ngupta@NAMAN-DELL:~$ ls -lrt
+total 4
+drwxr-xr-x 3 ngupta ngupta 4096 Nov 16 11:05 compute
+ngupta@NAMAN-DELL:~$ cd compute/com/example/compute/
+ngupta@NAMAN-DELL:~/compute/com/example/compute$ ls -lrt
+total 0
+ngupta@NAMAN-DELL:~/compute/com/example/compute$ vi Calculator.java
+ngupta@NAMAN-DELL:~/compute/com/example/compute$ cat Calculator.java
+package com.example.compute;
+
+public class Calculator{
+        public int add(int arg1,int arg2){ return arg1+arg2;}
+}
+```
+We created a directory and then created class Calculator.java. Let's compile it and see what it generates. For this
+we crated a script to save repetitive work which contains the below content:
+```text
+ngupta@NAMAN-DELL:~$ cat build.sh
+rm -rf output
+mkdir -p output/mlib
+mkdir -p output/classes
+
+javac -d output/classes `find compute -name *java`
+jar -c -f output/mlib/compute.jar -C output/classes .
+```
+Now we will run the script; and see the files. Also we will see a look inside the jar. 
+```text
+ngupta@NAMAN-DELL:~/output/mlib$ ls -lrt
+total 4
+-rw-r--r-- 1 ngupta ngupta 1009 Nov 16 11:16 compute.jar
+ngupta@NAMAN-DELL:~/output/mlib$ jar xf compute.jar
+ngupta@NAMAN-DELL:~/output/mlib$ ls -lrt
+total 12
+drwxr-xr-x 3 ngupta ngupta 4096 Nov 16 11:16 com
+drwxr-xr-x 2 ngupta ngupta 4096 Nov 16 11:16 META-INF
+-rw-r--r-- 1 ngupta ngupta 1009 Nov 16 11:16 compute.jar
+ngupta@NAMAN-DELL:~/output/mlib$ cat META-INF/MANIFEST.MF
+Manifest-Version: 1.0
+Created-By: 14.0.2 (Private Build)
+
+ngupta@NAMAN-DELL:~/output/mlib$ ls -lrt com/example/compute/Calculator.class
+-rw-r--r-- 1 ngupta ngupta 270 Nov 16 11:16 com/example/compute/Calculator.class
+```
+
+We can see that jar contains the META-INF file and class files. Let's also check module information of the jar.
+```text
+ngupta@NAMAN-DELL:~/output/mlib$ ls -rlt
+total 4
+-rw-r--r-- 1 ngupta ngupta 1009 Nov 16 11:16 compute.jar
+ngupta@NAMAN-DELL:~/output/mlib$ jar -f compute.jar -d
+No module descriptor found. Derived automatic module.
+
+compute automatic
+requires java.base mandated
+contains com.example.compute
+```
+In above, we can see that there is a `No module descriptor found. Derived automatic module.`. We will learn about 
+'Derived automatic module' more in upcoming sections. Let's understand what java did for us in above output. 
+Since No module descriptor found Java created an automatic module and name it on the jar name which is `
+compute automatic`. Then it is specifying that it requires java.base package from the JDK, and it includes the package 
+com.example.compute.
+
+### Create our own module
