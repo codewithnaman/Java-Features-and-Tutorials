@@ -7,6 +7,27 @@
     <groupId>org.example</groupId>
     <artifactId>Java9-Modules</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <module>compute-module</module>
+        <module>user-application-module</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

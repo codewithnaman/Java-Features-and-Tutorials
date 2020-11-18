@@ -166,3 +166,104 @@ compute automatic`. Then it is specifying that it requires java.base package fro
 com.example.compute.
 
 ### Create our own module
+For creating module we are using workspace present here [compute-module](compute-module).
+
+To create a module we create module-info.java and provide the specification like what is required and what we are 
+exporting as part of the module. Let's see how module-info.java looks like and then fill the further information 
+for this.
+```java
+module com.example.computation {
+    
+}
+```
+module is not keyword in java; but to declare the module we declare like above snippet. Let's create the jar and see the 
+information of jar. 
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+requires java.base mandated
+```
+
+As we can see that automatic module is not used for above jar and module name becomes the `com.example.computation` here.
+This is coming from the module-info.java; We didn't declare any require, but it added require java.base.
+
+Let's add it manually and see the output.
+```java
+module com.example.computation {
+    requires java.base;
+}
+``` 
+Let's now see the information of jar:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+requires java.base
+```
+If we compare the output when we didn't include the requires; it added by itself with `requires java.base manadated` ; 
+But when we explicitly provide this it will give whatever we provided `requires java.base`.
+
+Right now we are not exporting any package from the module; so no information about packaged has been displayed. Let's 
+export our package and then again observe the output.
+```java
+module com.exmaple.computation {
+    requires java.base;
+    exports com.example.compute;
+}
+``` 
+Output of Jar module description:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+exports com.example.compute
+requires java.base
+```
+* The module always requires other modules and exports its own packages.
+
+We have seen how to create a module; Let's now see how to use it.
+
+### Use modules in our module
+For this we have created an example of [user application](user-application-module). Where we are taking the compute
+module as required module and using its package and methods. Let's see module-info.java of this module.
+```java
+module com.example.user.application {
+    requires java.base;
+    requires com.example.computation;
+}
+```
+Let's see the information of this module jar.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>jar -f target\user-application-module-1.0-SNAPSHOT.jar -d
+com.example.user.application@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/target/user-application-module-1.0-SNAPSHOT.jar/!module-info.class
+requires com.example.computation
+requires java.base mandated
+contains com.example.user
+main-class com.example.user.Application
+```
+This requires the computation module; Which is exporting compute package, and we are using the Calculator class in our
+main class of User application. Let's have a look on the main class then output of jar.
+```java
+package com.example.user;
+
+import com.example.compute.Calculator;
+
+public class Application {
+    public static void main(String[] args) {
+        Calculator calculator = new Calculator();
+        System.out.println(calculator.add(5,3));
+    }
+}
+```
+Let's look output of jar:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>java -cp ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar com.example.user.Application
+8
+```
+or
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>java -p ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+8
+```
+
+We can see it is providing proper output; and we are using other module in our module. 
+
+Let's see how module exports works and what it exposes in next section.
