@@ -263,7 +263,179 @@ or
 D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>java -p ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 8
 ```
-
 We can see it is providing proper output; and we are using other module in our module. 
 
-Let's see how module exports works and what it exposes in next section.
+Creating and using module is two-way process; we need to create the module and export package and user module need to 
+declare the module in module-info.java requires. Let's see if any of them is missing then what error we get:
+1. When we don't export package
+```text
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
+  (package com.example.compute is declared in module com.example.computation, which does not export it)
+```
+2. When We don't include in requires
+```text
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
+  (package com.example.compute is declared in the unnamed module, but module com.example.user.application does not read it)
+```
+* The above is saying unnamed module because the jar has been included in the classpath; if it will be included in module 
+path; it will give proper module name. 
+
+In above section we have seen that creating and using module is like hand-shake where one module need to export package 
+while other have to import it for proper use. Let's see how module exports works and what it exposes in next section.
+
+### Un-Exported Packages in module
+For this we changed computation module, and we have added `com.example.random` and `com.example.random.impl` package.
+In `com.example.random`; we have kept an Interface, and its implementation inside `com.example.random.impl` package.
+
+We have exported only interface package as of now as part of the module-info.java not the implementation class. Also, we
+have added one method in Calculator class which provides the instance of the RandomProvider. The Calculator class method
+looks like below:
+```text
+ public RandomProvider getRandomProvider() {
+        return new RandomProviderImpl();
+    }
+``` 
+
+Now we use this in our user application class like below:
+```text
+  public static void main(String[] args) {
+        Calculator calculator = new Calculator();
+        System.out.println(calculator.add(5, 3));
+        RandomProvider randomProvider = calculator.getRandomProvider();
+        System.out.println("Random Number is " + randomProvider.getRandomNumber());
+        System.out.println("RandomProvider Implementation got is " + randomProvider.getClass());
+    }
+```
+The output of above is like below:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+
+8
+Random Number is 1237702826
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+```
+We can see even we don't exported the impl package we are getting implementation indirectly from the Calculator class.
+
+Let's see if we can access it directly and can use it.
+```text
+public static void main(String[] args) {
+        Calculator calculator = new Calculator();
+        System.out.println(calculator.add(5, 3));
+        RandomProvider randomProvider = calculator.getRandomProvider();
+        System.out.println("Random Number is " + randomProvider.getRandomNumber());
+        System.out.println("RandomProvider Implementation got is " + randomProvider.getClass());
+        RandomProviderImpl randomProvider1 = null;
+    }
+```
+When we compile above code we get below error:
+```text
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[5,26] package com.example.random.impl is not visible
+  (package com.example.random.impl is declared in module com.example.computation, which does not export it)
+```
+So we are getting it indirectly as part of implementation of RandomProvider from the Calculator class , but we can't 
+directly initialize it here because we don't export it from the module.
+
+So we even can't mention the name of un-exported package or classes. Otherwise, we will get above error. Also, As 
+discussed in above section the public class is no more public we can see here.
+
+#### Module Export and Reflection API
+Let's try to create a method inside the RandomProvider implementation and try to invoke using the Reflection API of java.
+We have created below method in RandomProviderImpl:
+```text
+    public double getRandomDecimalNumber() {
+        return random.nextDouble();
+    }
+```
+This is in the implementation class but not in the interface; Now Let's try to invoke this method using Reflection API
+and see if we get access to this method using Reflection API.
+```text
+  try {
+            Method decimalMethod = randomProvider.getClass().getMethod("getRandomDecimalNumber");
+            System.out.println(decimalMethod);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+```
+
+This will give if the method is present in the class. Let's see output of above:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+
+8
+Random Number is -177937742
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+```
+So, we get the method name, and it exists in class. Let's invoke it:
+```text
+try {
+            Method decimalMethod = randomProvider.getClass().getMethod("getRandomDecimalNumber");
+            System.out.println(decimalMethod);
+            System.out.println(decimalMethod.invoke(randomProvider));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+```
+When we run above program; The output would be like below:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+
+8
+Random Number is 1133294128
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+java.lang.IllegalAccessException: class com.example.user.Application (in module com.example.user.application) cannot access class com.example.random.impl.RandomProviderImpl (in module com.example.computation) because module com.example.computation does not export com.example.random.impl to module com.example.user.application
+```
+
+As we can see in above output We can't access the method using Reflection API at runtime. Let's export the package and 
+run the same program.
+```java
+module com.example.computation {
+    exports com.example.compute;
+    exports com.example.random;
+    exports com.example.random.impl;
+}
+```
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+
+8
+Random Number is -1961149267
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+0.32558885048553976
+```
+
+### Opening Module or Package for runtime access
+For giving runtime access to module we need to modify the module-info.java package like below:
+```text
+open module com.example.computation {
+    exports com.example.compute;
+    exports com.example.random;
+}
+```
+Here `open` keyword gives access to module at runtime. So all package classes are available at runtime; and compile
+time access of those classes which are exports are present in module-info.java. If we want to provide runtime access f
+or specific package then we can provide like below:
+```text
+module com.example.computation {
+    exports com.example.compute;
+    exports com.example.random;
+    opens com.example.random.impl;
+}
+``` 
+Here `opens` keyword provide runtime access for the package; but still we don't get compile time access for the package.
+
+Let's see output of our program after this change:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+
+8
+Random Number is 1435840007
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+0.29222097055068363
+```
+
+### Opening Module or Package to particular module
+In this section we will open module or package to limited number or specified modules.
