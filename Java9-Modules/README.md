@@ -338,7 +338,7 @@ directly initialize it here because we don't export it from the module.
 So we even can't mention the name of un-exported package or classes. Otherwise, we will get above error. Also, As 
 discussed in above section the public class is no more public we can see here.
 
-#### Module Export and Reflection API
+### Module Export and Reflection API
 Let's try to create a method inside the RandomProvider implementation and try to invoke using the Reflection API of java.
 We have created below method in RandomProviderImpl:
 ```text
@@ -438,4 +438,491 @@ public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber(
 ```
 
 ### Opening Module or Package to particular module
-In this section we will open module or package to limited number or specified modules.
+In this section we will open module or package to limited number or specified modules. For creating example of this
+we are creating another [user-application-module](user-application-module2) and then restrict the runtime access of 
+computation module to only one application module. This module is exactly same as the user-application-module apart 
+from the module name. Let's see the module-info.java of this:
+```java
+module com.example.user.application2 {
+    requires com.example.computation;
+}
+```
+
+We will give the runtime access to application module 1, and it will not have access to application module 2. Let's see 
+the computation module module-info.java to restrict access.
+```java
+module com.example.computation {
+    exports com.example.compute;
+    exports com.example.random;
+    opens com.example.random.impl to com.example.user.application;
+}
+```
+
+Now Let's run the both the application and see the output.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+8
+Random Number is -244269939
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+0.8789429751279432
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module2\target\user-application-module2-1.0-SNAPSHOT.jar -m com.example.user.application2
+8
+Random Number is 513411651
+RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
+public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
+java.lang.IllegalAccessException: class com.example.user2.Application (in module com.example.user.application2) cannot access class com.example.random.impl.RandomProviderImpl (in module com.example.computation) because 
+module com.example.computation does not export com.example.random.impl to module com.example.user.application2
+```
+
+As we can see user-application-module has runtime access for the impl package while user-application-module2
+throws error as it does not access. We can provide the comma separated values in module-info.java for providing the
+access to that module. 
+
+Now question comes why anybody wants to restrict packages to open to particular module not to rest of the world. Below
+are two good reasons for that:
+1. You want to provide the access to test module which should be limited to testing not open for use in development
+purpose.
+2. You want to restrict a module to use within your organization module then you cna build this.
+
+### Module versioning
+Right now we don't get much from the versioning; But in future with development of Java we may get much out of it.
+Right now we need to understand how it works and how to create versions of module. Let's get started:
+* Two versions of same module can't be exist in module path
+* To create the module version we can provide the `--module-version=1.0.0` while creating the jar; In our example
+maven is passing the artifact version as argument, and we can see below output:
+```text
+com.example.computation@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+exports com.example.compute
+exports com.example.random
+requires java.base mandated
+qualified opens com.example.random.impl to com.example.user.application
+```
+`1.0-SNAPSHOT` is coming from POM artifact version for our example.
+
+### Transitive Module Visibility
+We have seen in last sections that we need to export package or open them to provide compile time access or runtime
+access of module packages or module. Also, we have seen how to provide access of module to particular another module.
+
+Now we will see what happen when we use Module A in Module B and then this module B is used by Module C. Do Module 
+C have by default access to Module A? or if not then how we can provide it.
+
+For create an example of this we have compute module from our last sections; Which exports compute and random packages
+and open reflective access for implementation package to application module.
+
+We are creating a new module named [advance-compute-module](advance-compute-module); Which uses the computation module
+and this advance-compute-module is used by [user-application-module3](user-application-module3). Now we will see if 
+user-application-module3 get the access for the compute module or not. 
+
+We have written below module-info.java in advance-compute-module:
+```java
+module com.example.advance.compute {
+    requires com.example.computation;
+    exports com.exmaple.advance;
+}
+```
+and, below one in user-application-module3:
+```java
+module user.application.module3 {
+    requires com.example.advance.compute;
+}
+```
+
+We created one class in the advance-compute-module which provide the square root of given number and the instance of 
+Calculator from the computation module. Looks like below:
+```java
+package com.exmaple.advance;
+
+import com.example.compute.Calculator;
+
+public class AdvanceCalculator {
+
+    public Calculator getCalculator(){
+        return new Calculator();
+    }
+
+    public double getSquareRoot(double number){
+        return Math.sqrt(number);
+    }
+}
+```
+
+And, In user module we will use this class and see if we can use the calculator there.
+```java
+package com.example.user3;
+
+import com.exmaple.advance.AdvanceCalculator;
+
+public class Application {
+
+    public static void main(String[] args) {
+        AdvanceCalculator advanceCalculator = new AdvanceCalculator();
+        System.out.println("Square root of 4 is " + advanceCalculator.getSquareRoot(4));
+        System.out.println("Sum of 5 and 4 is "+ advanceCalculator.getCalculator().add(5,4));
+    }
+}
+```
+When we compile with above code; we get below error:
+```text
+/D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module3/src/main/java/com/example/user3/Application.java:[10,83] com.example.compute.Calculator.add(int,int) in package com.example.compute is not accessible
+  (package com.example.compute is declared in module com.example.computation, but module user.application.module3 does not read it)
+```
+Which mention that the `user.application.module3` does not have access to module `com.example.computation`. Now If we 
+want to provide the access we can provide like below:
+```java
+module user.application.module3 {
+    requires com.example.advance.compute;
+    requires com.example.computation;
+}
+``` 
+
+What if we want this pass from the advance compute module to other module i.e. if any module who requires the advance 
+compute module will also get the computation module to perform the computation package operation. For doing this we
+will change the advance-compute-module module-info.java and add transitive for computation requires.
+```java
+module com.example.advance.compute {
+    requires transitive com.example.computation;
+    exports com.exmaple.advance;
+}
+```
+
+Now Let's compile and run the code for the same.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module\target\advance-compute-module-1.0-SNAPSHOT.jar;user-application-module3\target\u
+ser-application-module3-1.0-SNAPSHOT.jar -m user.application.module3
+Square root of 4 is 2.0
+Sum of 5 and 4 is 9
+```
+
+**When to use Transitive requires**
+* When we are developing utility, and we expose any class or method of requires module then we should use the transitive
+import.
+* When refactoring existing code and break them into multiple modules. This will help to forward the new module to client's
+module, so their code will be not impacted due to this refactoring.
+
+## Targeted Linking
+This is related to bundling your apps and carrying the modules you really need to run your application. For example
+of this we are going to use [user-application-module3](user-application-module3) and bundle it separately. Just to 
+recap this module requires `com.example.advance.compute` module and transitively it requires `com.example.computation`
+which requires the `java.base` module.
+
+Now Let's bundle them in a package to deploy in environments and see what Java provides us for doing this so. We have 
+seen Java has number of modules itself; But that all not required to user-application-module3. Let's create a small 
+targeted module that just keep our application and module required to it. For creating this Java provides us jlink.
+For this we need to provide the path to jmods present in <Java installation root directory>\jmods; Which will bring the
+Java library modules required by our application and create bundle from them. For creating the our targetted module
+we will use below command.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>set JAVA_MODS="C:\CodeTools\Java\OpenJDK 15\jmods"
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>echo %JAVA_MODS%
+"C:\CodeTools\Java\OpenJDK 15\jmods"
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jlink --module-path %JAVA_MODS%;compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module
+\target\advance-compute-module-1.0-SNAPSHOT.jar;user-application-module3\target\user-application-module3-1.0-SNAPSHOT.jar --output deployable --add-modules user.ap
+plication.module3 --launcher=testdeployable=user.application.module3
+```
+
+In above command we included the modules in module path; then in output we have provided the directory in which we want
+to create our targeted module; add modules will create optimize deployable for our module, and the launcher is the name
+of file which will start the application which should assign to a module or main class to start the application. 
+
+Let's have a look on the directory deployable we have created using above command.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>dir
+ Volume in drive D has no label.
+ Volume Serial Number is 0EA9-10A1
+
+ Directory of D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable
+
+30-11-2020  10:19    <DIR>          .
+30-11-2020  10:19    <DIR>          ..
+30-11-2020  10:19    <DIR>          bin
+30-11-2020  10:19    <DIR>          conf
+30-11-2020  10:19    <DIR>          include
+30-11-2020  10:19    <DIR>          legal
+30-11-2020  10:19    <DIR>          lib
+30-11-2020  10:19               121 release
+               1 File(s)            121 bytes
+               7 Dir(s)  83,712,598,016 bytes free
+```
+In this folder a small deployable is created with java and library related with app. Lets list-modules of this java:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>bin\java.exe --list-modules
+com.example.advance.compute@1.0-SNAPSHOT
+com.example.computation@1.0-SNAPSHOT
+java.base@15.0.1
+user.application.module3@1.0-SNAPSHOT
+```
+Also, it contains a file which will launch our application.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>bin\testdeployable
+Square root of 4 is 2.0
+Sum of 5 and 4 is 9
+```
+
+So in above example we have seen that using jlink command we can create our application specific deployment; which
+contains its own java with the only module required by our application; We are not carrying all java modules and jars
+which is not needed by application.
+
+* jlink will not work with automatic modules.
+* If we think we need the module in path and need to add then we can provide the list of modules in --add-modules.
+
+## Legacy jars, Automatic modules in classpath and modulepath
+In above sections we have seen if we pass any jar in the module path then it act like automatic module, and jar name 
+will be the name of automatic module.
+
+In old java we had classpath; From Java 9 onwards we have classpath and modulepath both. Traditionally we put the 
+libraries in classpath and, we are able to run the program if compile time dependencies are present. Also, If we are
+using any runtime dependencies and that is not present; we got to know when it blows up at runtime which is not secure.
+
+With the modulepath; It takes dependencies graph at runtime and if it didn't start-up application; which is fail-fast
+and more secure as compare to blow up in runtime. 
+
+* jar go into classpath.
+* modules go into modulepath. Modules are jars with the module descriptor.
+
+But not all jars right now have the module description information. Let's first see what happen when we put these
+legacy jars in the classpath and modulepath or mix and match of them. A
+
+Let's create two jars without module descriptors. 
+1. [Util jar](util-jar-without-module-info) which will be used by User jar.
+2. [User jar](user-jar-without-module-info) which will use util jar and call it methods.
+
+Let's see both the jars information.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -d
+No module descriptor found. Derived automatic module.
+
+util.jar.without.module.info@1.0-SNAPSHOT automatic
+requires java.base mandated
+contains com.example.util
+
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -d
+No module descriptor found. Derived automatic module.
+
+user.jar.without.module.info@1.0-SNAPSHOT automatic
+requires java.base mandated
+contains com.example.user
+```
+
+**Scenario 1:**
+
+Let's add Both the jar in classpath and run the program.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-w
+ithout-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar com.example.user.User
+User Class Class Info Started
+Class Name  : class com.example.user.User
+Module Name : unnamed module @6b884d57
+User Class Class Info Finished
+-------------------------------------------
+User Calling Util Info Started
+Util Class Class Info Started
+Class Name  : class com.example.util.Util
+Module Name : unnamed module @6b884d57
+Util Class Class Info Finished
+User Calling Util Info Finished
+-------------------------------------------
+Printing Util Class Info From User class started
+Class Name  : class com.example.util.Util
+Module Name : unnamed module @6b884d57
+Printing Util Class Info From User class started
+```
+
+We can see that module information is coming as unnamed module as we put the jars in classpath.
+
+**Scenario 2:**
+
+Let's add Both the jar in modulepath and run the program.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-without-m
+odule-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -m user.jar.without.module.info/com.example.user.User
+User Class Class Info Started
+Class Name  : class com.example.user.User
+Module Name : module user.jar.without.module.info
+User Class Class Info Finished
+-------------------------------------------
+User Calling Util Info Started
+Util Class Class Info Started
+Class Name  : class com.example.util.Util
+Module Name : module util.jar.without.module.info
+Util Class Class Info Finished
+User Calling Util Info Finished
+-------------------------------------------
+Printing Util Class Info From User class started
+Class Name  : class com.example.util.Util
+Module Name : module util.jar.without.module.info
+Printing Util Class Info From User class started
+```
+We can see in above output the module info which we get as automatic module.
+
+**Scenario 3:**
+
+Now Let's put the util jar in classpath and user jar in module path.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -p user-ja
+r-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -m user.jar.without.module.info/com.example.user.User
+User Class Class Info Started
+Class Name  : class com.example.user.User
+Module Name : module user.jar.without.module.info
+User Class Class Info Finished
+-------------------------------------------
+User Calling Util Info Started
+Util Class Class Info Started
+Class Name  : class com.example.util.Util
+Module Name : unnamed module @133314b
+Util Class Class Info Finished
+User Calling Util Info Finished
+-------------------------------------------
+Printing Util Class Info From User class started
+Class Name  : class com.example.util.Util
+Module Name : unnamed module @133314b
+Printing Util Class Info From User class started
+```
+
+As we can see the util is included in classpath and considered as unnamed module; But user class is modulepath and it
+prints the automatic module information.
+
+**Scenario 4:**
+
+Now Let's put the util jar in module path and user jar in class path.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -p util-ja
+r-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar com.example.user.User
+User Class Class Info Started
+Class Name  : class com.example.user.User
+Module Name : unnamed module @1ddc4ec2
+User Class Class Info Finished
+-------------------------------------------
+User Calling Util Info Started
+Exception in thread "main" java.lang.NoClassDefFoundError: com/example/util/Util
+        at com.example.user.User.main(User.java:13)
+Caused by: java.lang.ClassNotFoundException: com.example.util.Util
+        at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:606)
+        at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:168)
+        at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:522)
+        ... 1 more
+```
+When we include the util jar in modulepath then it is not able to find class and fails.
+
+### Conclusion from above scenario
+* We can put all jars in classpath to run the program.
+* We can put all jars in modulepath and can use automatic module name.
+* We can put the user jar in modulepath and dependent jars in classpath, but vice-versa is not true.
+
+
+* Class in the classpath (Unnamed Module) can reach other classes in the classpath (Unnamed Module).
+* Class in the modulepath (Automatic Module) can reach other classes in the modulepath (Automatic Module).
+* Class in the modulepath (Automatic Module) can reach other classes in the classpath (Unnamed Module).
+* Class in the classpath (Unnamed Module) can't reach other class in the modulepath (Automatic Module).
+
+## Explicit named modules, Automatic modules and Unnamed Modules
+Let's first create an Explicit named module by providing module-info.java and see the module information. For this example
+we created [user-jar-with-module-info](user-jar-with-module-info). Now Let's see the information of it's jar.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -d
+userApp@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-jar-with-module-info/target/user-jar-with-module-info-1.0-SNAPSHOT.jar
+/!module-info.class
+requires java.base mandated
+```
+Let's try to run the program and see if we are getting module information.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
+ser.UserApp
+UserApp Class Info Started
+Class Name  : class com.example.user.UserApp
+Module Name : module userApp
+UserApp Class Info Finished
+```
+
+Generally Explicit named modules sits in the modulepath. Let's see what happen when we use them in classpath.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
+ser.UserApp
+UserApp Class Info Started
+Class Name  : class com.example.user.UserApp
+Module Name : module userApp
+UserApp Class Info Finished
+```
+As we can see in above code that when we provide the Explicit named module in classpath it behave like unnamed module.
+
+### Explicit named module using other Explicit named module
+Let's see if an Explicit named module can talk to other Explicit named module.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
+o\target\util-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.user.UserApp
+UserApp Class Info Started
+Class Name  : class com.example.user.UserApp
+Module Name : module userApp
+UserApp Class Info Finished
+-----------------------------------------------
+UserApp Calling InfoUtil Started
+InfoUtil Class Info Started
+Class Name  : class com.example.util.InfoUtil
+Module Name : module util.with.module.info
+InfoUtil Class Info Finished
+UserApp Calling InfoUtil Finished
+```
+* Explicit named module can call other Explicit named module by making an entry in module require.
+
+### Explicit named module using automatic module
+Before we start using an automatic module in an Explicit named module; We need to know below point:
+* Automatic modules exports everything it has.
+
+Let's try using an automatic module in our module.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
+o\target\util-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.user.U
+serApp
+UserApp Class Info Started
+Class Name  : class com.example.user.UserApp
+Module Name : module userApp
+UserApp Class Info Finished
+-----------------------------------------------
+UserApp Calling InfoUtil Started
+InfoUtil Class Info Started
+Class Name  : class com.example.utils.InfoUtil
+Module Name : module util.with.module.info
+InfoUtil Class Info Finished
+UserApp Calling InfoUtil Finished
+-----------------------------------------------
+UserApp Calling Util Started
+Util Class Class Info Started
+Class Name  : class com.example.util.Util
+Module Name : module util.jar.without.module.info
+Util Class Class Info Finished
+UserApp Calling Util Finished
+```
+
+From above example we can see an Explicit named module can call an automatic module.
+
+### Explicit named module using unnamed module
+Explicit named module cannot access unnamed module. As anything to use in the explicit named module you need to provide that
+in requires of module-info.java.
+
+Since we can't provide the unnamed module in module descriptor and no handshake can be done between the unnamed module
+and Explicit named module; so Explicit named module can't access the unnamed module.
+
+### Revise Module access
+Let's quickly revise via diagram:
+![Module Access Image](images/Modules%20Access%20Chart.jpg)
+
+* Unnamed module sit in the classpath
+* Automatic modules sit in the modulepath
+* Explicit named modules has module descriptor (module-info.java)
+* Explicit named modules sit in the modulepath
+* Explicit named modules when run from the classpath behave as unnamed
+
+* Unnamed modules can access other unnamed modules
+* Unnamed modules can't access automatic modules
+* Automatic modules can access other automatic modules
+* Automatic modules can access unnamed modules
+* Explicit named modules can access other Explicit named modules
+* Explicit named modules can access automatic modules
+* Explicit named modules can't access unnamed modules 
+
+
+# Transitioning from Legacy jars to modules

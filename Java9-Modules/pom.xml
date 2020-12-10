@@ -18,6 +18,13 @@
     <modules>
         <module>compute-module</module>
         <module>user-application-module</module>
+        <module>user-application-module2</module>
+        <module>advance-compute-module</module>
+        <module>user-application-module3</module>
+        <module>util-jar-without-module-info</module>
+        <module>user-jar-without-module-info</module>
+        <module>util-jar-with-module-info</module>
+        <module>user-jar-with-module-info</module>
     </modules>
 
     <build>
