@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>Java9-Modules</artifactId>
+        <groupId>org.example</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>lesson-3</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <module>util-jar-without-module-info</module>
+        <module>user-jar-without-module-info</module>
+        <module>util-jar-with-module-info</module>
+        <module>user-jar-with-module-info</module>
+        <module>same-module-name-first</module>
+        <module>same-module-name-second</module>
+        <module>same-package-first</module>
+        <module>same-package-second</module>
+        <module>same-package-user</module>
+        <module>modules-with-test</module>
+    </modules>
+</project>

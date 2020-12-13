@@ -1,7 +1,6 @@
-# Table of Contents
-* Why
-
 # Java 9 Modules 
+
+# Lesson 1 : Environment Setup and Why Modules
 ## Environment Setup
 Let's first setup environment with Java 8 and Java 9 or 9+; for this example we are setting up the OpenJDK 8 and OpenJDK
 14. We are doing setup for both to see brief difference and then 9+ we will use in our most examples. To install the
@@ -97,7 +96,7 @@ command. Let's see how many modules we have with Java 14:
 ngupta@NAMAN-DELL:/$ java --list-modules|wc -l
 72
 ```
-
+#Lesson 2 : Module creation and Using it in other module 
 ## Creating modules
 ### Creating Classes without modules
 We will create a class and compile it with Java Version 9 or 9+ and then we will see the output of that.
@@ -161,8 +160,8 @@ contains com.example.compute
 ```
 In above, we can see that there is a `No module descriptor found. Derived automatic module.`. We will learn about 
 'Derived automatic module' more in upcoming sections. Let's understand what java did for us in above output. 
-Since No module descriptor found Java created an automatic module and name it on the jar name which is `
-compute automatic`. Then it is specifying that it requires java.base package from the JDK, and it includes the package 
+Since No module descriptor found Java created an automatic module and name it on the jar name which is `compute automatic`. 
+Then it is specifying that it requires java.base package from the JDK, and it includes the package 
 com.example.compute.
 
 ### Create our own module
@@ -179,8 +178,8 @@ module com.example.computation {
 module is not keyword in java; but to declare the module we declare like above snippet. Let's create the jar and see the 
 information of jar. 
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
-com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
 requires java.base mandated
 ```
 
@@ -195,8 +194,8 @@ module com.example.computation {
 ``` 
 Let's now see the information of jar:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
-com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
 requires java.base
 ```
 If we compare the output when we didn't include the requires; it added by itself with `requires java.base manadated` ; 
@@ -212,8 +211,8 @@ module com.exmaple.computation {
 ``` 
 Output of Jar module description:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
-com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\compute-module>jar -f target\compute-module-1.0-SNAPSHOT.jar -d
+com.example.computation jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
 exports com.example.compute
 requires java.base
 ```
@@ -222,7 +221,7 @@ requires java.base
 We have seen how to create a module; Let's now see how to use it.
 
 ### Use modules in our module
-For this we have created an example of [user application](user-application-module). Where we are taking the compute
+For this we have created an example of [user application](lesson-2/user-application-module). Where we are taking the compute
 module as required module and using its package and methods. Let's see module-info.java of this module.
 ```java
 module com.example.user.application {
@@ -232,8 +231,8 @@ module com.example.user.application {
 ```
 Let's see the information of this module jar.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>jar -f target\user-application-module-1.0-SNAPSHOT.jar -d
-com.example.user.application@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/target/user-application-module-1.0-SNAPSHOT.jar/!module-info.class
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\user-application-module>jar -f target\user-application-module-1.0-SNAPSHOT.jar -d
+com.example.user.application@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/user-application-module/target/user-application-module-1.0-SNAPSHOT.jar/!module-info.class
 requires com.example.computation
 requires java.base mandated
 contains com.example.user
@@ -255,12 +254,12 @@ public class Application {
 ```
 Let's look output of jar:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>java -cp ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar com.example.user.Application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\user-application-module>java -cp ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar com.example.user.Application
 8
 ```
 or
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\user-application-module>java -p ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\user-application-module>java -p ..\compute-module\target\compute-module-1.0-SNAPSHOT.jar;target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 8
 ```
 We can see it is providing proper output; and we are using other module in our module. 
@@ -269,12 +268,12 @@ Creating and using module is two-way process; we need to create the module and e
 declare the module in module-info.java requires. Let's see if any of them is missing then what error we get:
 1. When we don't export package
 ```text
-[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
   (package com.example.compute is declared in module com.example.computation, which does not export it)
 ```
 2. When We don't include in requires
 ```text
-[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/user-application-module/src/main/java/com/example/user/Application.java:[3,19] package com.example.compute is not visible
   (package com.example.compute is declared in the unnamed module, but module com.example.user.application does not read it)
 ```
 * The above is saying unnamed module because the jar has been included in the classpath; if it will be included in module 
@@ -308,7 +307,7 @@ Now we use this in our user application class like below:
 ```
 The output of above is like below:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 
 8
 Random Number is 1237702826
@@ -329,7 +328,7 @@ public static void main(String[] args) {
 ```
 When we compile above code we get below error:
 ```text
-[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module/src/main/java/com/example/user/Application.java:[5,26] package com.example.random.impl is not visible
+[ERROR] /D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/user-application-module/src/main/java/com/example/user/Application.java:[5,26] package com.example.random.impl is not visible
   (package com.example.random.impl is declared in module com.example.computation, which does not export it)
 ```
 So we are getting it indirectly as part of implementation of RandomProvider from the Calculator class , but we can't 
@@ -359,7 +358,7 @@ and see if we get access to this method using Reflection API.
 
 This will give if the method is present in the class. Let's see output of above:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 
 8
 Random Number is -177937742
@@ -378,7 +377,7 @@ try {
 ```
 When we run above program; The output would be like below:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 
 8
 Random Number is 1133294128
@@ -397,7 +396,7 @@ module com.example.computation {
 }
 ```
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 
 8
 Random Number is -1961149267
@@ -428,7 +427,7 @@ Here `opens` keyword provide runtime access for the package; but still we don't 
 
 Let's see output of our program after this change:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 
 8
 Random Number is 1435840007
@@ -439,7 +438,7 @@ public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber(
 
 ### Opening Module or Package to particular module
 In this section we will open module or package to limited number or specified modules. For creating example of this
-we are creating another [user-application-module](user-application-module2) and then restrict the runtime access of 
+we are creating another [user-application-module](lesson-2/user-application-module2) and then restrict the runtime access of 
 computation module to only one application module. This module is exactly same as the user-application-module apart 
 from the module name. Let's see the module-info.java of this:
 ```java
@@ -460,14 +459,14 @@ module com.example.computation {
 
 Now Let's run the both the application and see the output.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module\target\user-application-module-1.0-SNAPSHOT.jar -m com.example.user.application
 8
 Random Number is -244269939
 RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
 public double com.example.random.impl.RandomProviderImpl.getRandomDecimalNumber()
 0.8789429751279432
 
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module2\target\user-application-module2-1.0-SNAPSHOT.jar -m com.example.user.application2
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;user-application-module2\target\user-application-module2-1.0-SNAPSHOT.jar -m com.example.user.application2
 8
 Random Number is 513411651
 RandomProvider Implementation got is class com.example.random.impl.RandomProviderImpl
@@ -493,7 +492,7 @@ Right now we need to understand how it works and how to create versions of modul
 * To create the module version we can provide the `--module-version=1.0.0` while creating the jar; In our example
 maven is passing the artifact version as argument, and we can see below output:
 ```text
-com.example.computation@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
+com.example.computation@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/compute-module/target/compute-module-1.0-SNAPSHOT.jar/!module-info.class
 exports com.example.compute
 exports com.example.random
 requires java.base mandated
@@ -511,8 +510,8 @@ C have by default access to Module A? or if not then how we can provide it.
 For create an example of this we have compute module from our last sections; Which exports compute and random packages
 and open reflective access for implementation package to application module.
 
-We are creating a new module named [advance-compute-module](advance-compute-module); Which uses the computation module
-and this advance-compute-module is used by [user-application-module3](user-application-module3). Now we will see if 
+We are creating a new module named [advance-compute-module](lesson-2/advance-compute-module); Which uses the computation module
+and this advance-compute-module is used by [user-application-module3](lesson-2/user-application-module3). Now we will see if 
 user-application-module3 get the access for the compute module or not. 
 
 We have written below module-info.java in advance-compute-module:
@@ -565,7 +564,7 @@ public class Application {
 ```
 When we compile with above code; we get below error:
 ```text
-/D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-application-module3/src/main/java/com/example/user3/Application.java:[10,83] com.example.compute.Calculator.add(int,int) in package com.example.compute is not accessible
+/D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-2/user-application-module3/src/main/java/com/example/user3/Application.java:[10,83] com.example.compute.Calculator.add(int,int) in package com.example.compute is not accessible
   (package com.example.compute is declared in module com.example.computation, but module user.application.module3 does not read it)
 ```
 Which mention that the `user.application.module3` does not have access to module `com.example.computation`. Now If we 
@@ -589,7 +588,7 @@ module com.example.advance.compute {
 
 Now Let's compile and run the code for the same.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module\target\advance-compute-module-1.0-SNAPSHOT.jar;user-application-module3\target\u
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>java -p compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module\target\advance-compute-module-1.0-SNAPSHOT.jar;user-application-module3\target\u
 ser-application-module3-1.0-SNAPSHOT.jar -m user.application.module3
 Square root of 4 is 2.0
 Sum of 5 and 4 is 9
@@ -603,7 +602,7 @@ module, so their code will be not impacted due to this refactoring.
 
 ## Targeted Linking
 This is related to bundling your apps and carrying the modules you really need to run your application. For example
-of this we are going to use [user-application-module3](user-application-module3) and bundle it separately. Just to 
+of this we are going to use [user-application-module3](lesson-2/user-application-module3) and bundle it separately. Just to 
 recap this module requires `com.example.advance.compute` module and transitively it requires `com.example.computation`
 which requires the `java.base` module.
 
@@ -614,12 +613,12 @@ For this we need to provide the path to jmods present in <Java installation root
 Java library modules required by our application and create bundle from them. For creating the our targetted module
 we will use below command.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>set JAVA_MODS="C:\CodeTools\Java\OpenJDK 15\jmods"
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>set JAVA_MODS="C:\CodeTools\Java\OpenJDK 15\jmods"
 
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>echo %JAVA_MODS%
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>echo %JAVA_MODS%
 "C:\CodeTools\Java\OpenJDK 15\jmods"
 
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jlink --module-path %JAVA_MODS%;compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2>jlink --module-path %JAVA_MODS%;compute-module\target\compute-module-1.0-SNAPSHOT.jar;advance-compute-module
 \target\advance-compute-module-1.0-SNAPSHOT.jar;user-application-module3\target\user-application-module3-1.0-SNAPSHOT.jar --output deployable --add-modules user.ap
 plication.module3 --launcher=testdeployable=user.application.module3
 ```
@@ -630,11 +629,11 @@ of file which will start the application which should assign to a module or main
 
 Let's have a look on the directory deployable we have created using above command.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>dir
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\deployable>dir
  Volume in drive D has no label.
  Volume Serial Number is 0EA9-10A1
 
- Directory of D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable
+ Directory of D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\deployable
 
 30-11-2020  10:19    <DIR>          .
 30-11-2020  10:19    <DIR>          ..
@@ -649,7 +648,7 @@ D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>dir
 ```
 In this folder a small deployable is created with java and library related with app. Lets list-modules of this java:
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>bin\java.exe --list-modules
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\deployable>bin\java.exe --list-modules
 com.example.advance.compute@1.0-SNAPSHOT
 com.example.computation@1.0-SNAPSHOT
 java.base@15.0.1
@@ -657,7 +656,7 @@ user.application.module3@1.0-SNAPSHOT
 ```
 Also, it contains a file which will launch our application.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\deployable>bin\testdeployable
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-2\deployable>bin\testdeployable
 Square root of 4 is 2.0
 Sum of 5 and 4 is 9
 ```
@@ -669,6 +668,7 @@ which is not needed by application.
 * jlink will not work with automatic modules.
 * If we think we need the module in path and need to add then we can provide the list of modules in --add-modules.
 
+# Lesson 3 : Automatic Module, Unnamed Module and Explicit Named module and Legacy jar to module migration
 ## Legacy jars, Automatic modules in classpath and modulepath
 In above sections we have seen if we pass any jar in the module path then it act like automatic module, and jar name 
 will be the name of automatic module.
@@ -687,12 +687,12 @@ But not all jars right now have the module description information. Let's first 
 legacy jars in the classpath and modulepath or mix and match of them. A
 
 Let's create two jars without module descriptors. 
-1. [Util jar](util-jar-without-module-info) which will be used by User jar.
-2. [User jar](user-jar-without-module-info) which will use util jar and call it methods.
+1. [Util jar](lesson-3/util-jar-without-module-info) which will be used by User jar.
+2. [User jar](lesson-3/user-jar-without-module-info) which will use util jar and call it methods.
 
 Let's see both the jars information.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -d
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>jar -f util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -d
 No module descriptor found. Derived automatic module.
 
 util.jar.without.module.info@1.0-SNAPSHOT automatic
@@ -700,7 +700,7 @@ requires java.base mandated
 contains com.example.util
 
 
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -d
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>jar -f user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -d
 No module descriptor found. Derived automatic module.
 
 user.jar.without.module.info@1.0-SNAPSHOT automatic
@@ -712,7 +712,7 @@ contains com.example.user
 
 Let's add Both the jar in classpath and run the program.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-w
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-w
 ithout-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar com.example.user.User
 User Class Class Info Started
 Class Name  : class com.example.user.User
@@ -738,7 +738,7 @@ We can see that module information is coming as unnamed module as we put the jar
 
 Let's add Both the jar in modulepath and run the program.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-without-m
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar;user-jar-without-m
 odule-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -m user.jar.without.module.info/com.example.user.User
 User Class Class Info Started
 Class Name  : class com.example.user.User
@@ -763,7 +763,7 @@ We can see in above output the module info which we get as automatic module.
 
 Now Let's put the util jar in classpath and user jar in module path.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -p user-ja
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -classpath util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -p user-ja
 r-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -m user.jar.without.module.info/com.example.user.User
 User Class Class Info Started
 Class Name  : class com.example.user.User
@@ -790,7 +790,7 @@ prints the automatic module information.
 
 Now Let's put the util jar in module path and user jar in class path.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -classpath user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -p util-ja
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -classpath user-jar-without-module-info\target\user-jar-without-module-info-1.0-SNAPSHOT.jar -p util-ja
 r-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar com.example.user.User
 User Class Class Info Started
 Class Name  : class com.example.user.User
@@ -821,16 +821,16 @@ When we include the util jar in modulepath then it is not able to find class and
 
 ## Explicit named modules, Automatic modules and Unnamed Modules
 Let's first create an Explicit named module by providing module-info.java and see the module information. For this example
-we created [user-jar-with-module-info](user-jar-with-module-info). Now Let's see the information of it's jar.
+we created [user-jar-with-module-info](lesson-3/user-jar-with-module-info). Now Let's see the information of it's jar.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>jar -f user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -d
-userApp@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/user-jar-with-module-info/target/user-jar-with-module-info-1.0-SNAPSHOT.jar
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>jar -f user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -d
+userApp@1.0-SNAPSHOT jar:file:///D:/Workspace/Java-Features-and-Tutorials/Java9-Modules/lesson-3/user-jar-with-module-info/target/user-jar-with-module-info-1.0-SNAPSHOT.jar
 /!module-info.class
 requires java.base mandated
 ```
 Let's try to run the program and see if we are getting module information.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
 ser.UserApp
 UserApp Class Info Started
 Class Name  : class com.example.user.UserApp
@@ -840,7 +840,7 @@ UserApp Class Info Finished
 
 Generally Explicit named modules sits in the modulepath. Let's see what happen when we use them in classpath.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.u
 ser.UserApp
 UserApp Class Info Started
 Class Name  : class com.example.user.UserApp
@@ -852,7 +852,7 @@ As we can see in above code that when we provide the Explicit named module in cl
 ### Explicit named module using other Explicit named module
 Let's see if an Explicit named module can talk to other Explicit named module.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
 o\target\util-jar-with-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.user.UserApp
 UserApp Class Info Started
 Class Name  : class com.example.user.UserApp
@@ -874,7 +874,7 @@ Before we start using an automatic module in an Explicit named module; We need t
 
 Let's try using an automatic module in our module.
 ```text
-D:\Workspace\Java-Features-and-Tutorials\Java9-Modules>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p user-jar-with-module-info\target\user-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-with-module-inf
 o\target\util-jar-with-module-info-1.0-SNAPSHOT.jar;util-jar-without-module-info\target\util-jar-without-module-info-1.0-SNAPSHOT.jar -m userApp/com.example.user.U
 serApp
 UserApp Class Info Started
@@ -908,6 +908,7 @@ and Explicit named module; so Explicit named module can't access the unnamed mod
 
 ### Revise Module access
 Let's quickly revise via diagram:
+
 ![Module Access Image](images/Modules%20Access%20Chart.jpg)
 
 * Unnamed module sit in the classpath
@@ -926,3 +927,225 @@ Let's quickly revise via diagram:
 
 
 # Transitioning from Legacy jars to modules
+When, we start migrating from our legacy jars to new modules. We should follow from Left to right dependency i.e.
+we need to create the module of user jar which are using other jars. Let's understand this by taking an example
+
+Let's consider we have A.jar which is used by B.jar which is further used by C.jar. Then Dependency will look like
+`C---using--->B---using--->A`. So We need to change first the C.jar and in module info we can require automatic
+module B. This is according to rule `Explicit named modules can access automatic modules`. 
+
+But think from perspective, if we start from right to left then we transform the A.jar and try to access from B; Which
+will Automatic module then `Automatic modules can't access  Explicit named modules`. And that will break migration.
+
+Let's again continue with our original migration `C---using--->B---using--->A`. Now let's consider C is now a module
+which requires the automatic module B. Now after C has been migrated B as the Explicit named modules. Now we have problem
+let's say you given the B.jar module name foo. Then you need to change the C and provide `requires foo`; which is not
+ideal; We will deal with this problem later in this section subsections. Let's consider we have done with C and B and,
+now B requires automatic module A, and then we can convert A into the Explicit named module and can provide it to B. 
+With all of this the transition is completed. 
+
+Let's understand some problems we may face during migration; One we already seen in the above paragraph of renaming
+require automatic module to explicit named module. This problem also called split package.
+
+## Issues we might face while migrating from leagcy jars to modules.
+### Access violation
+Converting a legacy jar to module; we need to provide what package we are providing to access others; Which package
+we are opening for reflection. So we need to take care on this part what access we are providing to users of library
+and what are restricted.
+
+### Automatic package naming and split package
+Let's first take an jar and we will see how it behaves on providing different names to jar and their automatic module
+names.
+* Simple jar name
+```text
+ngupta@NAMAN-DELL:~$ jar -f util.jar -d
+No module descriptor found. Derived automatic module.
+
+util automatic
+requires java.base mandated
+contains com.example.util
+```
+
+* Jar name with dots
+```text
+ngupta@NAMAN-DELL:~$ jar -f util.example.jar -d
+No module descriptor found. Derived automatic module.
+
+util.example automatic
+requires java.base mandated
+contains com.example.util
+```
+
+* Jar name with dash
+```text
+ngupta@NAMAN-DELL:~$ jar -f util-example.jar -d
+No module descriptor found. Derived automatic module.
+
+util.example automatic
+requires java.base mandated
+contains com.example.util
+```  
+We can see the dash is converted to dot here in automatic module name.
+
+* Jar name with number
+```text
+ngupta@NAMAN-DELL:~$ jar -f util1.jar -d
+No module descriptor found. Derived automatic module.
+
+util1 automatic
+requires java.base mandated
+contains com.example.util
+```  
+
+* Jar name with dots and number
+```text
+ngupta@NAMAN-DELL:~$ jar -f util.1.jar -d
+Unable to derive module descriptor for: util.1.jar
+util.1: Invalid module name: '1' is not a Java identifier
+```  
+We can see that after . if there is number it is not able to create module out of it.
+
+* Jar name with dash and number
+```text
+ngupta@NAMAN-DELL:~$ jar -f util-1.jar -d
+No module descriptor found. Derived automatic module.
+
+util@1 automatic
+requires java.base mandated
+contains com.example.util
+```
+We can see after the dash number becomes the version of module.
+
+* Jar name with dash, number and dots
+```text
+ngupta@NAMAN-DELL:~$ jar -f util-1.jar -d
+No module descriptor found. Derived automatic module.
+
+util@1 automatic
+requires java.base mandated
+contains com.example.util
+```  
+
+* Jar name with dots, number, dashes and letter
+```text
+ngupta@NAMAN-DELL:~$ jar -f util-1.2.3adsfd.jar -d
+No module descriptor found. Derived automatic module.
+
+util@1.2.3adsfd automatic
+requires java.base mandated
+contains com.example.util
+```
+
+As we can see in above example the automatic module change the name with jar name. When, we migrate user jar to 
+explicit named module and provide the automatic module in require and then automatic module is migrated to explicit
+named module; then we need to update the user jar just to update requires in the jar and recompile and deploy.
+
+To overcome this problem we can create a file with any name and provide the automatic module name like below in the file.
+```text
+Automatic-Module-Name: com.example.B
+
+```
+And we can re-create the automatic module jar with providing an extra option `-m <file_path_containing_automatic_module_name>`
+and this will create the jar which automatic module name is fixed and will not change with jar name.
+
+In the file line break is important; If you don't provide the line break while creating jar it will not consider the 
+property we provided.
+ 
+### Module name collision in modulepath and package collision in different modules
+#### Module name collision in modulepath
+Let's create an example with two jars both have main class in different packages, but we will keep the module name same.
+Let's see these jars code
+* [Main class in com.example.first package](lesson-3/same-module-name-first)
+* [Main class in com.example.second package](lesson-3/same-module-name-second)
+
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>scp same-module-name-first\target\same-module-name-first-1.0-SNAPSHOT.jar temp\
+        1 file(s) copied.
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>scp same-module-name-second\target\same-module-name-second-1.0-SNAPSHOT.jar temp\
+        1 file(s) copied.
+        
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp -m same-module-name-first\com.example.first.Application
+Error occurred during initialization of boot layer
+java.lang.module.FindException: Two versions of module com.example.same.name found in temp (same-module-name-second-1.0-SNAPSHOT.jar and same-module-name-first-1.0-SNAPSHOT.jar)
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-first-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.first.Application
+Module Name :module com.example.same.name First Package Application
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-second-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.second.Application
+Module Name :module com.example.same.name Second Package Application
+```
+
+When we pass individual jars in module path and pass the module name and class name the program works fine. When we
+put both jars in single module path then it gives error that two versions of same module is present in the path.
+
+If we provide the jars separated by ; or : then it will work fine because they are present in different module path.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-first-1.0-SNAPSHOT.jar;temp\same-module-name-second-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.first.Application
+Module Name :module com.example.same.name First Package Application
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-second-1.0-SNAPSHOT.jar;temp\same-module-name-first-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.first.Application
+Error: Could not find or load main class com.example.first.Application in module com.example.same.name
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-first-1.0-SNAPSHOT.jar;temp\same-module-name-second-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.second.Application
+Error: Could not find or load main class com.example.second.Application in module com.example.same.name
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-second-1.0-SNAPSHOT.jar;temp\same-module-name-first-1.0-SNAPSHOT.jar -m com.example.same.name/com.example.second.Application
+Module Name :module com.example.same.name Second Package Application
+```
+We can see in two of examples it worked perfectly fine; because two versions of same jar in different module path
+not in single module path.
+
+Let's see why we are getting error in rest two of examples. If we observe the output it says it didn't find the Class. 
+It is because in modulepath precendence is given to first module in modulepath; if same name module is present
+in different modulepaths. So, when we have given the first package module in first modulepath then it take precedence over the
+second package module and it is able to execute the program. But when we have given second pacakge module first in the 
+modulepath first then it ignores first package module and it is not able to find the class.
+
+Let's see one more example and conclude the same module name module collision:
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp\same-module-name-second-1.0-SNAPSHOT.jar;temp\same-module-name-first-1.0-SNAPSHOT.jar;temp -m com.example.same.name/com.example.second.Applicat
+ion
+Error occurred during initialization of boot layer
+java.lang.module.FindException: Two versions of module com.example.same.name found in temp (same-module-name-second-1.0-SNAPSHOT.jar and same-module-name-first-1.0-SNAPSHOT.jar)
+```
+In above example even we have given the second package module precedence but since in last modulepath; we are giving the
+two modules with same name in single modulepath; that's why we are getting above error.
+
+**Conclusion:**
+* In a modulepath we can't have multiple modules with same name.
+* When multiple modulepaths are provided, the order in which they are specified dictates the order of precedence.
+
+#### Package collision in different modules
+Let's create two application which has same package.
+* [same-package-first](lesson-3/same-package-first)
+* [same-package-second](lesson-3/same-package-second)
+* [same-package-user](lesson-3/same-package-user)
+
+
+We have two different classes in same package in different modules; and our user application is not using the classes,
+but we just added them in module-info.java requires.
+```text
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>scp same-package-first\target\same-package-first-1.0-SNAPSHOT.jar temp
+        1 file(s) copied.
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>scp same-package-second\target\same-package-second-1.0-SNAPSHOT.jar temp
+        1 file(s) copied.
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>scp same-package-user\target\same-package-user-1.0-SNAPSHOT.jar temp
+        1 file(s) copied.
+
+D:\Workspace\Java-Features-and-Tutorials\Java9-Modules\lesson-3>java -p temp -m same.util.user/com.example.same.user.UserApplication
+Error occurred during initialization of boot layer
+java.lang.LayerInstantiationException: Package com.example.same in both module same.util.first and module same.util.second
+```
+As we can see in above example; We are not even exporting the package from modules. And in our user application we 
+are not even provided them in require. Still, since both the modules have same package then we are getting the error.
+If we export the modules we get the error in compile time of the user application.
+
+So In modules if any user application import two different module which has same package; we will get the error. This 
+just include the same package. Subpackages are considered as different package i.e. com.example.same and com.example.same.first
+will we considered as different package, and we will not get any exception for this.
+
+# Lesson 4 : Multiple module same package solution
+There are some situation in which we want that same package exist in multiple modules. One of such case is the test cases. 
